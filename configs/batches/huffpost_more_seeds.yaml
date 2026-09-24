@@ -6,7 +6,6 @@ mode: tune_and_test
 # [experiment_seed, split_seed]
 seeds:
   - [42, 42]
-  - [43, 42]
 
 dataset_config: configs/datasets/huffpost.yaml
 experiment_config: configs/experiments/default.yaml

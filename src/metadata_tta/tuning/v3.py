@@ -1431,7 +1431,6 @@ def _inherit_metadata_core(
             ),
     }
 
-
 def _inherit_drift_configuration(
     cumulative_result: StageResult,
     drift_result: StageResult,
@@ -1471,43 +1470,6 @@ def _inherit_drift_configuration(
                 ),
 
             f"{prefix}.drift_signal":
-                "normalized_aux_loss",
-        }
-    )
-
-    return overrides
-
-def _inherit_drift_configuration(
-    cumulative_result: StageResult,
-    drift_result: StageResult,
-    *,
-    target_method: str,
-) -> dict[str, Any]:
-
-    overrides = _inherit_metadata_core(
-        cumulative_result,
-        target_method=target_method,
-    )
-
-    if (
-        "adwin_delta"
-        not in drift_result.best_parameters
-    ):
-        raise RuntimeError(
-            "Cannot inherit drift configuration: "
-            "best adwin_delta is missing."
-        )
-
-    overrides.update(
-        {
-            f"{target_method}.adwin_delta":
-                float(
-                    drift_result.best_parameters[
-                        "adwin_delta"
-                    ]
-                ),
-
-            f"{target_method}.drift_signal":
                 "normalized_aux_loss",
         }
     )

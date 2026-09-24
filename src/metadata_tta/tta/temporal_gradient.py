@@ -1108,17 +1108,6 @@ class TemporalGradientEMATTA(MetadataTTA):
 
         diagnostics.update(
             {
-                "aux_threshold_pass_count":
-                    int(
-                        self.n_aux_threshold_pass
-                    ),
-
-                "aux_threshold_pass_rate":
-                    float(
-                        self.n_aux_threshold_pass
-                        / n_observations
-                    ),
-
                 "warmup_update_count":
                     int(
                         self.n_warmup_updates
