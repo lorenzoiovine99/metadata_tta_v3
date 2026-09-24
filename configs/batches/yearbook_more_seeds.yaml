@@ -1,0 +1,15 @@
+dataset: yearbook
+
+mode: tune_and_test
+
+# Ogni riga:
+# [experiment_seed, split_seed]
+seeds:
+  - [42, 42]
+  - [43, 43]
+
+dataset_config: configs/datasets/yearbook.yaml
+experiment_config: configs/experiments/default.yaml
+tuning_config: configs/tuning/default.yaml
+
+continue_on_error: false

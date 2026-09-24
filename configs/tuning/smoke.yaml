@@ -1,0 +1,93 @@
+tuning:
+  model:
+    candidates:
+      - id: smoke_model
+        parameters:
+          lr: 0.0003
+          temporal_lr: 0.0001
+          weight_decay: 0.0001
+          shared_hidden_dim: 512
+        overrides:
+          training.base.learning_rate: 0.0003
+          training.temporal.learning_rate: 0.0001
+          training.base.weight_decay: 0.0001
+          model.single_head.shared_hidden_dim: 512
+
+  aux_head:
+    candidates:
+      - id: smoke_aux
+        parameters:
+          aux_lr: 0.001
+        overrides:
+          training.double_head.learning_rate: 0.001
+
+  metadata_episodic:
+    candidates:
+      - id: smoke_episodic
+        parameters:
+          lr: 0.0003
+          normalized_aux_loss_threshold: 0.0
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0003
+          methods.metadata_episodic.normalized_aux_loss_threshold: 0.0
+
+  metadata_cumulative:
+    candidates:
+      - id: smoke_cumulative
+        parameters:
+          lr: 0.0003
+          normalized_aux_loss_threshold: 0.0
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0003
+          methods.metadata_cumulative.normalized_aux_loss_threshold: 0.0
+
+  metadata_cumulative_annual_reset:
+    inherit_from: metadata_cumulative
+    candidates:
+      - id: smoke_cumulative_annual_reset
+        parameters: {}
+        overrides: {}
+
+  metadata_cumulative_drift_reset:
+    inherit_from: metadata_cumulative
+    candidates:
+      - id: smoke_drift
+        parameters:
+          adwin_delta: 0.10
+        overrides:
+          methods.metadata_cumulative_drift_reset.adwin_delta: 0.10
+
+  metadata_cumulative_drift_annual_reset:
+    inherit_from: metadata_cumulative_drift_reset
+    candidates:
+      - id: smoke_drift_annual_reset
+        parameters: {}
+        overrides: {}
+
+  temporal_gradient_ema:
+    inherit_from: metadata_cumulative
+    candidates:
+      - id: smoke_temporal_gradient
+        parameters:
+          beta: 0.95
+          orthogonal_scale: 0.5
+          warmup_updates: 16
+          regularization: 0.01
+        overrides:
+          methods.temporal_gradient_ema.beta: 0.95
+          methods.temporal_gradient_ema.orthogonal_scale: 0.5
+          methods.temporal_gradient_ema.warmup_updates: 16
+          methods.temporal_gradient_ema.regularization: 0.01
+
+  tent:
+    candidates:
+      - id: smoke_tent
+        parameters:
+          lr: 0.001
+          batch_size: 64
+        overrides:
+          methods.tent.learning_rate: 0.001
+          methods.tent.batch_size: 64
+
+  cotta:
+    candidates: []

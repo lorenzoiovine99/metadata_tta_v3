@@ -1,0 +1,14 @@
+dataset: fmow
+
+mode: tune_and_test
+
+# Ogni riga:
+# [experiment_seed, split_seed]
+seeds:
+  - [42, 42]
+
+dataset_config: configs/datasets/fmow.yaml
+experiment_config: configs/experiments/default.yaml
+tuning_config: configs/tuning/default.yaml
+
+continue_on_error: false
