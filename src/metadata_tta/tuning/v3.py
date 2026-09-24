@@ -1390,7 +1390,8 @@ def _inherit_metadata_core(
 
     required = (
         "lr",
-        "normalized_aux_loss_threshold",
+        "normalized_aux_loss_min",
+        "normalized_aux_loss_max",
     )
 
     missing = [
@@ -1415,10 +1416,17 @@ def _inherit_metadata_core(
                 result.best_parameters["lr"]
             ),
 
-        f"{prefix}.normalized_aux_loss_threshold":
+        f"{prefix}.normalized_aux_loss_min":
             float(
                 result.best_parameters[
-                    "normalized_aux_loss_threshold"
+                    "normalized_aux_loss_min"
+                ]
+            ),
+
+        f"{prefix}.normalized_aux_loss_max":
+            float(
+                result.best_parameters[
+                    "normalized_aux_loss_max"
                 ]
             ),
     }

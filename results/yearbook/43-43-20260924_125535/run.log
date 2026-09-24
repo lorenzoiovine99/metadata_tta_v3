@@ -1,6 +1,0 @@
-2026-09-24 12:55:35 | INFO     | Metadata TTA V3
-2026-09-24 12:55:35 | INFO     | dataset=yearbook mode=tune_and_test experiment_seed=43 split_seed=43
-2026-09-24 12:55:35 | INFO     | run_directory=results/yearbook/43-43-20260924_125535
-2026-09-24 13:18:38 | INFO     | Effective run configuration written to results/yearbook/43-43-20260924_125535/run_config.yaml
-2026-09-24 13:18:38 | INFO     | Final experiment completed successfully.
-2026-09-24 13:18:38 | INFO     | Results written to results/yearbook/43-43-20260924_125535

@@ -5,7 +5,8 @@ mode: tune_and_test
 # Ogni riga:
 # [experiment_seed, split_seed]
 seeds:
-  - [43, 43]
+  - [42, 42]
+  - [43, 42]
 
 dataset_config: configs/datasets/huffpost.yaml
 experiment_config: configs/experiments/default.yaml

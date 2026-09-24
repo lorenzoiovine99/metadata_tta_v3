@@ -1,4 +1,0 @@
-year,method,accuracy,n_samples
-2016,metadata_cumulative_annual_reset,0.6665245202558635,2345
-2017,metadata_cumulative_annual_reset,0.6228668941979523,1758
-2018,metadata_cumulative_annual_reset,0.6709511568123393,778

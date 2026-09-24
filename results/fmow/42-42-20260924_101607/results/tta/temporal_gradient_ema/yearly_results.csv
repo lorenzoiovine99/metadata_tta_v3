@@ -1,6 +1,0 @@
-year,method,accuracy,n_samples
-2013,temporal_gradient_ema,0.394392523364486,2675
-2014,temporal_gradient_ema,0.23991507430997877,3768
-2015,temporal_gradient_ema,0.21261977942505875,5531
-2016,temporal_gradient_ema,0.18592039291926737,9773
-2017,temporal_gradient_ema,0.14801864801864803,3432

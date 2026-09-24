@@ -38,10 +38,27 @@ def _statistics(
         dtype=np.float64,
     )
 
+    weights = np.asarray(
+        [
+            int(record.n_samples)
+            for record in records
+        ],
+        dtype=np.float64,
+    )
+
+    if np.sum(weights) <= 0:
+        raise RuntimeError(
+            "Cannot compute sample-weighted accuracy "
+            "with zero total samples."
+        )
+
     return {
         "n_years": len(records),
         "mean_accuracy": float(
-            np.mean(values)
+            np.average(
+                values,
+                weights=weights,
+            )
         ),
         "std_accuracy": float(
             np.std(values)

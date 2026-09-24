@@ -88,10 +88,18 @@ class MetadataTTA(
             ]
         )
 
-        self.normalized_aux_loss_threshold = float(
-            self.config[
-                "normalized_aux_loss_threshold"
-            ]
+        self.normalized_aux_loss_min = float(
+            self.config.get(
+                "normalized_aux_loss_min",
+                0.0,
+            )
+        )
+
+        self.normalized_aux_loss_max = float(
+            self.config.get(
+                "normalized_aux_loss_max",
+                1.0,
+            )
         )
 
         self.steps = int(
@@ -137,10 +145,15 @@ class MetadataTTA(
                 "metadata.steps must be >= 1."
             )
 
-        if self.normalized_aux_loss_threshold < 0.0:
+        if self.normalized_aux_loss_min < 0.0:
             raise ValueError(
-                "metadata.normalized_aux_loss_threshold "
-                "must be >= 0."
+                "metadata.normalized_aux_loss_min must be >= 0."
+            )
+
+        if self.normalized_aux_loss_max <= self.normalized_aux_loss_min:
+            raise ValueError(
+                "metadata.normalized_aux_loss_max must be "
+                "> normalized_aux_loss_min."
             )
 
         # ====================================================
@@ -432,7 +445,9 @@ class MetadataTTA(
         self,
     ) -> None:
 
-        self.n_aux_threshold_pass = 0
+        self.n_aux_window_pass = 0
+        self.n_aux_below_window = 0
+        self.n_aux_above_window = 0
 
         self.sum_aux_loss = 0.0
         self.sum_normalized_aux_loss = 0.0
@@ -706,31 +721,37 @@ class MetadataTTA(
 
         if (
             normalized_aux_loss
-            < self.normalized_aux_loss_threshold
+            < self.normalized_aux_loss_min
         ):
+            self.n_aux_below_window += 1
 
             return AdaptationResult(
                 applied=False,
                 diagnostics={
-                    "reason":
-                        "below_aux_threshold",
-
-                    "aux_loss":
-                        aux_loss_value,
-
-                    "normalized_aux_loss":
-                        normalized_aux_loss,
-
-                    "batch_size":
-                        int(
-                            len(
-                                x_tensor
-                            )
-                        ),
+                    "reason": "below_aux_loss_window",
+                    "aux_loss": aux_loss_value,
+                    "normalized_aux_loss": normalized_aux_loss,
+                    "batch_size": int(len(x_tensor)),
                 },
             )
 
-        self.n_aux_threshold_pass += 1
+        if (
+            normalized_aux_loss
+            > self.normalized_aux_loss_max
+        ):
+            self.n_aux_above_window += 1
+
+            return AdaptationResult(
+                applied=False,
+                diagnostics={
+                    "reason": "above_aux_loss_window",
+                    "aux_loss": aux_loss_value,
+                    "normalized_aux_loss": normalized_aux_loss,
+                    "batch_size": int(len(x_tensor)),
+                },
+            )
+
+        self.n_aux_window_pass += 1
 
         # ====================================================
         # ADAPT
@@ -890,16 +911,40 @@ class MetadataTTA(
 
         diagnostics.update(
             {
-                "aux_threshold_pass_count":
-                    int(
-                        self.n_aux_threshold_pass
-                    ),
+                "aux_window_pass_count": int(
+                    self.n_aux_window_pass
+                ),
 
-                "aux_threshold_pass_rate":
-                    float(
-                        self.n_aux_threshold_pass
-                        / n_observations
-                    ),
+                "aux_window_pass_rate": float(
+                    self.n_aux_window_pass
+                    / n_observations
+                ),
+
+                "aux_below_window_count": int(
+                    self.n_aux_below_window
+                ),
+
+                "aux_below_window_rate": float(
+                    self.n_aux_below_window
+                    / n_observations
+                ),
+
+                "aux_above_window_count": int(
+                    self.n_aux_above_window
+                ),
+
+                "aux_above_window_rate": float(
+                    self.n_aux_above_window
+                    / n_observations
+                ),
+
+                "normalized_aux_loss_min": float(
+                    self.normalized_aux_loss_min
+                ),
+
+                "normalized_aux_loss_max": float(
+                    self.normalized_aux_loss_max
+                ),
 
                 "mean_aux_loss":
                     float(

@@ -1,2 +1,0 @@
-trial_id,mean_delta_accuracy,std_delta_accuracy,worst_delta_accuracy,n_improved_years,inherited_methods.metadata_cumulative_annual_reset.learning_rate,inherited_methods.metadata_cumulative_annual_reset.normalized_aux_loss_threshold,frozen_accuracy_2015,tta_accuracy_2015,delta_accuracy_2015
-inherit,0.015220700152207,0.0,0.015220700152207,1,0.001,0.5,0.6385083713850838,0.6537290715372908,0.015220700152207

@@ -826,24 +826,35 @@ class TemporalGradientEMATTA(MetadataTTA):
 
         if (
             normalized_aux_loss
-            < self.normalized_aux_loss_threshold
+            < self.normalized_aux_loss_min
         ):
+            self.n_aux_below_window += 1
 
             return AdaptationResult(
                 applied=False,
                 diagnostics={
-                    "reason":
-                        "below_aux_threshold",
-
-                    "aux_loss":
-                        aux_loss_value,
-
-                    "normalized_aux_loss":
-                        normalized_aux_loss,
+                    "reason": "below_aux_loss_window",
+                    "aux_loss": aux_loss_value,
+                    "normalized_aux_loss": normalized_aux_loss,
                 },
             )
 
-        self.n_aux_threshold_pass += 1
+        if (
+            normalized_aux_loss
+            > self.normalized_aux_loss_max
+        ):
+            self.n_aux_above_window += 1
+
+            return AdaptationResult(
+                applied=False,
+                diagnostics={
+                    "reason": "above_aux_loss_window",
+                    "aux_loss": aux_loss_value,
+                    "normalized_aux_loss": normalized_aux_loss,
+                },
+            )
+
+        self.n_aux_window_pass += 1
 
         # ====================================================
         # ONE OR MORE ADAPTATION STEPS

@@ -1,6 +1,0 @@
-year,method,accuracy,n_samples
-2013,metadata_cumulative_drift_reset,0.47514018691588783,2675
-2014,metadata_cumulative_drift_reset,0.46709129511677283,3768
-2015,metadata_cumulative_drift_reset,0.4044476586512385,5531
-2016,metadata_cumulative_drift_reset,0.38330093113680547,9773
-2017,metadata_cumulative_drift_reset,0.4087995337995338,3432

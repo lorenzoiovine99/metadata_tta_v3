@@ -193,173 +193,244 @@ tuning:
     - id: e00
       parameters:
         lr: 0.0001
-        normalized_aux_loss_threshold: 0.0
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_episodic.learning_rate: 0.0001
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.0
+        methods.metadata_episodic.normalized_aux_loss_min: 0.0
+        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
     - id: e01
       parameters:
         lr: 0.0001
-        normalized_aux_loss_threshold: 0.25
+        normalized_aux_loss_min: 0.25
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_episodic.learning_rate: 0.0001
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.25
+        methods.metadata_episodic.normalized_aux_loss_min: 0.25
+        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
     - id: e02
       parameters:
         lr: 0.0001
-        normalized_aux_loss_threshold: 0.5
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 0.75
       overrides:
         methods.metadata_episodic.learning_rate: 0.0001
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.5
+        methods.metadata_episodic.normalized_aux_loss_min: 0.0
+        methods.metadata_episodic.normalized_aux_loss_max: 0.75
+
     - id: e03
       parameters:
         lr: 0.0003
-        normalized_aux_loss_threshold: 0.0
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_episodic.learning_rate: 0.0003
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.0
+        methods.metadata_episodic.normalized_aux_loss_min: 0.0
+        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
     - id: e04
       parameters:
         lr: 0.0003
-        normalized_aux_loss_threshold: 0.25
+        normalized_aux_loss_min: 0.25
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_episodic.learning_rate: 0.0003
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.25
+        methods.metadata_episodic.normalized_aux_loss_min: 0.25
+        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
     - id: e05
       parameters:
         lr: 0.0003
-        normalized_aux_loss_threshold: 0.5
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 0.75
       overrides:
         methods.metadata_episodic.learning_rate: 0.0003
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.5
+        methods.metadata_episodic.normalized_aux_loss_min: 0.0
+        methods.metadata_episodic.normalized_aux_loss_max: 0.75
+
     - id: e06
       parameters:
         lr: 0.0005
-        normalized_aux_loss_threshold: 0.0
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_episodic.learning_rate: 0.0005
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.0
+        methods.metadata_episodic.normalized_aux_loss_min: 0.0
+        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
     - id: e07
       parameters:
         lr: 0.0005
-        normalized_aux_loss_threshold: 0.25
+        normalized_aux_loss_min: 0.25
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_episodic.learning_rate: 0.0005
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.25
+        methods.metadata_episodic.normalized_aux_loss_min: 0.25
+        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
     - id: e08
       parameters:
         lr: 0.0005
-        normalized_aux_loss_threshold: 0.5
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 0.75
       overrides:
         methods.metadata_episodic.learning_rate: 0.0005
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.5
+        methods.metadata_episodic.normalized_aux_loss_min: 0.0
+        methods.metadata_episodic.normalized_aux_loss_max: 0.75
+
     - id: e09
       parameters:
         lr: 0.001
-        normalized_aux_loss_threshold: 0.0
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_episodic.learning_rate: 0.001
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.0
+        methods.metadata_episodic.normalized_aux_loss_min: 0.0
+        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
     - id: e10
       parameters:
         lr: 0.001
-        normalized_aux_loss_threshold: 0.25
+        normalized_aux_loss_min: 0.25
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_episodic.learning_rate: 0.001
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.25
+        methods.metadata_episodic.normalized_aux_loss_min: 0.25
+        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
     - id: e11
       parameters:
         lr: 0.001
-        normalized_aux_loss_threshold: 0.5
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 0.75
       overrides:
         methods.metadata_episodic.learning_rate: 0.001
-        methods.metadata_episodic.normalized_aux_loss_threshold: 0.5
+        methods.metadata_episodic.normalized_aux_loss_min: 0.0
+        methods.metadata_episodic.normalized_aux_loss_max: 0.75
+
   metadata_cumulative:
     candidates:
     - id: c00
       parameters:
         lr: 0.0001
-        normalized_aux_loss_threshold: 0.0
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0001
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+
     - id: c01
       parameters:
         lr: 0.0001
-        normalized_aux_loss_threshold: 0.25
+        normalized_aux_loss_min: 0.25
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0001
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.25
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+
     - id: c02
       parameters:
         lr: 0.0001
-        normalized_aux_loss_threshold: 0.5
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 0.75
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0001
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.5
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_max: 0.75
+
     - id: c03
       parameters:
         lr: 0.0003
-        normalized_aux_loss_threshold: 0.0
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0003
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+
     - id: c04
       parameters:
         lr: 0.0003
-        normalized_aux_loss_threshold: 0.25
+        normalized_aux_loss_min: 0.25
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0003
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.25
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+
     - id: c05
       parameters:
         lr: 0.0003
-        normalized_aux_loss_threshold: 0.5
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 0.75
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0003
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.5
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_max: 0.75
+
     - id: c06
       parameters:
         lr: 0.0005
-        normalized_aux_loss_threshold: 0.0
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0005
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+
     - id: c07
       parameters:
         lr: 0.0005
-        normalized_aux_loss_threshold: 0.25
+        normalized_aux_loss_min: 0.25
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0005
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.25
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+
     - id: c08
       parameters:
         lr: 0.0005
-        normalized_aux_loss_threshold: 0.5
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 0.75
       overrides:
         methods.metadata_cumulative.learning_rate: 0.0005
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.5
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_max: 0.75
+
     - id: c09
       parameters:
         lr: 0.001
-        normalized_aux_loss_threshold: 0.0
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_cumulative.learning_rate: 0.001
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+
     - id: c10
       parameters:
         lr: 0.001
-        normalized_aux_loss_threshold: 0.25
+        normalized_aux_loss_min: 0.25
+        normalized_aux_loss_max: 1.0
       overrides:
         methods.metadata_cumulative.learning_rate: 0.001
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.25
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+
     - id: c11
       parameters:
         lr: 0.001
-        normalized_aux_loss_threshold: 0.5
+        normalized_aux_loss_min: 0.0
+        normalized_aux_loss_max: 0.75
       overrides:
         methods.metadata_cumulative.learning_rate: 0.001
-        methods.metadata_cumulative.normalized_aux_loss_threshold: 0.5
+        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+        methods.metadata_cumulative.normalized_aux_loss_max: 0.75
   metadata_cumulative_annual_reset:
     candidates:
     - id: inherit
@@ -416,7 +487,8 @@ tuning:
       from_method: metadata_cumulative
       fields:
         - learning_rate
-        - normalized_aux_loss_threshold
+        - normalized_aux_loss_min
+        - normalized_aux_loss_max
 
     candidates:
       - id: tg00

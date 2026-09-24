@@ -80,7 +80,8 @@ methods:
     batch_size: 1
     regularization: 0.0
     gradient_clip: 0.1
-    normalized_aux_loss_threshold: 0.0
+    normalized_aux_loss_min: 0.0
+    normalized_aux_loss_max: 1.0
     steps: 1
 
   metadata_cumulative:
@@ -89,7 +90,8 @@ methods:
     batch_size: 1
     regularization: 0.0
     gradient_clip: 0.1
-    normalized_aux_loss_threshold: 0.0
+    normalized_aux_loss_min: 0.0
+    normalized_aux_loss_max: 1.0
     steps: 1
 
   metadata_cumulative_annual_reset:
@@ -98,7 +100,8 @@ methods:
     batch_size: 1
     regularization: 0.0
     gradient_clip: 0.1
-    normalized_aux_loss_threshold: 0.0
+    normalized_aux_loss_min: 0.0
+    normalized_aux_loss_max: 1.0
     steps: 1
 
   metadata_cumulative_drift_reset:
@@ -107,7 +110,8 @@ methods:
     batch_size: 1
     regularization: 0.0
     gradient_clip: 0.1
-    normalized_aux_loss_threshold: 0.0
+    normalized_aux_loss_min: 0.0
+    normalized_aux_loss_max: 1.0
     steps: 1
     drift_signal: normalized_aux_loss
     adwin_delta: 0.10
@@ -118,7 +122,8 @@ methods:
     batch_size: 1
     regularization: 0.0
     gradient_clip: 0.1
-    normalized_aux_loss_threshold: 0.0
+    normalized_aux_loss_min: 0.0
+    normalized_aux_loss_max: 1.0
     steps: 1
     drift_signal: normalized_aux_loss
     adwin_delta: 0.10
@@ -129,7 +134,8 @@ methods:
     batch_size: 1
     regularization: 0.01
     gradient_clip: 0.1
-    normalized_aux_loss_threshold: 0.0
+    normalized_aux_loss_min: 0.0
+    normalized_aux_loss_max: 1.0
     steps: 1
     beta: 0.95
     orthogonal_scale: 0.5
