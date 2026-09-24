@@ -1,0 +1,4 @@
+year,method,accuracy,n_samples
+2016,supervised_reference,0.7198294243070362,2345
+2017,supervised_reference,0.7110352673492605,1758
+2018,supervised_reference,0.7673521850899743,778

@@ -1,0 +1,8 @@
+{
+  "best_accuracy": 0.394392523364486,
+  "mean_accuracy": 0.23617328360748777,
+  "method": "temporal_gradient_ema",
+  "n_years": 5,
+  "std_accuracy": 0.0847333336822514,
+  "worst_accuracy": 0.14801864801864803
+}

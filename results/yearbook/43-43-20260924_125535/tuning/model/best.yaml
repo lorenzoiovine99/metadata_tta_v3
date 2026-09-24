@@ -1,0 +1,58 @@
+kind: model
+name: model
+score_name: mean_validation_accuracy
+score: 0.9880685649344544
+parameters:
+  lr: 0.0001
+  temporal_lr: 3.0e-05
+  weight_decay: 0.0
+  shared_hidden_dim: 512
+overrides:
+  training.base.learning_rate: 0.0001
+  training.temporal.learning_rate: 3.0e-05
+  training.base.weight_decay: 0.0
+  model.single_head.shared_hidden_dim: 512
+extra:
+  years:
+  - 1930
+  - 1931
+  - 1932
+  - 1933
+  - 1934
+  - 1935
+  - 1936
+  - 1937
+  - 1938
+  - 1939
+  - 1940
+  - 1941
+  - 1942
+  - 1943
+  - 1944
+  - 1945
+  - 1946
+  - 1947
+  - 1948
+  - 1949
+  - 1950
+  - 1951
+  - 1952
+  - 1953
+  - 1954
+  - 1955
+  - 1956
+  - 1957
+  - 1958
+  - 1959
+  - 1960
+  - 1961
+  - 1962
+  - 1963
+  - 1964
+  - 1965
+  - 1966
+  - 1967
+  - 1968
+  - 1969
+  experiment_seed: 43
+  split_seed: 43

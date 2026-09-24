@@ -1,0 +1,17 @@
+kind: tta
+name: metadata_cumulative_drift_annual_reset
+score_name: mean_delta_accuracy
+score: 0.015220700152207
+parameters: {}
+overrides:
+  methods.metadata_cumulative_drift_annual_reset.learning_rate: 0.001
+  methods.metadata_cumulative_drift_annual_reset.normalized_aux_loss_threshold: 0.5
+  metadata_cumulative_drift_annual_reset.adwin_delta: 0.01
+  metadata_cumulative_drift_annual_reset.drift_signal: normalized_aux_loss
+  methods.metadata_cumulative_drift_annual_reset.drift_signal: normalized_aux_loss
+extra:
+  stream_years:
+  - 2015
+  stream_split: validation
+  experiment_seed: 42
+  split_seed: 42

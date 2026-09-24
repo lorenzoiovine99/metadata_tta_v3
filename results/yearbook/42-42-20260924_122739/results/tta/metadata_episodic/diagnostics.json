@@ -1,0 +1,15 @@
+{
+  "aux_threshold_pass_count": 2817,
+  "aux_threshold_pass_rate": 0.6801062288749397,
+  "evaluation_order": "adapt_then_predict",
+  "mean_aux_loss": 3.4103109074408247,
+  "mean_gradient_norm": 323.91102310111586,
+  "mean_normalized_aux_loss": 1.0876470095577073,
+  "mean_parameter_delta": 0.09947614313846324,
+  "method": "metadata_episodic",
+  "n_observations": 4142,
+  "n_trainable_parameters": 264256,
+  "n_updates": 2817,
+  "trainable_scope": "online_adapter",
+  "update_rate": 0.6801062288749397
+}

@@ -1,0 +1,28 @@
+kind: model
+name: model
+score_name: mean_validation_accuracy
+score: 0.40404884802798663
+parameters:
+  lr: 0.0003
+  temporal_lr: 0.0001
+  weight_decay: 0.0001
+  shared_hidden_dim: 1024
+overrides:
+  training.base.learning_rate: 0.0003
+  training.temporal.learning_rate: 0.0001
+  training.base.weight_decay: 0.0001
+  model.single_head.shared_hidden_dim: 1024
+extra:
+  years:
+  - 2002
+  - 2003
+  - 2004
+  - 2005
+  - 2006
+  - 2007
+  - 2008
+  - 2009
+  - 2010
+  - 2011
+  experiment_seed: 42
+  split_seed: 42

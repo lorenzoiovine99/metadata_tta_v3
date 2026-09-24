@@ -1,0 +1,8 @@
+{
+  "best_accuracy": 0.32186915887850465,
+  "mean_accuracy": 0.23773000757096105,
+  "method": "tent",
+  "n_years": 5,
+  "std_accuracy": 0.06061657272292315,
+  "worst_accuracy": 0.1587995337995338
+}

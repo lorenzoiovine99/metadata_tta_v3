@@ -1,0 +1,8 @@
+{
+  "best_accuracy": 0.6665245202558635,
+  "mean_accuracy": 0.6554766855843309,
+  "method": "metadata_cumulative_drift_reset",
+  "n_years": 3,
+  "std_accuracy": 0.0142331554105599,
+  "worst_accuracy": 0.6353811149032992
+}

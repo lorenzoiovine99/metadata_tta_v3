@@ -1,0 +1,33 @@
+{
+  "adwin_delta": 0.1,
+  "annual_reset_count": 2,
+  "aux_threshold_pass_count": 1794,
+  "aux_threshold_pass_rate": 0.36754763368162263,
+  "drift_detector_detections": 1,
+  "drift_detector_observations": 4881,
+  "drift_events": [
+    {
+      "adwin_delta": 0.1,
+      "drift_event_number": 1,
+      "global_sample_index": 2239,
+      "normalized_aux_loss": 0.4321213841790238,
+      "observation_index": 2239,
+      "pre_update_aux_loss": 0.6954725384712219,
+      "year": 2016,
+      "year_sample_index": 2239
+    }
+  ],
+  "drift_reset_count": 1,
+  "drift_signal": "normalized_aux_loss",
+  "evaluation_order": "adapt_then_predict",
+  "mean_aux_loss": 0.8553754197698048,
+  "mean_gradient_norm": 8.316145363293186,
+  "mean_normalized_aux_loss": 0.5314746304665722,
+  "mean_parameter_delta": 0.05613879598872654,
+  "method": "metadata_cumulative_drift_annual_reset",
+  "n_observations": 4881,
+  "n_trainable_parameters": 99136,
+  "n_updates": 1794,
+  "trainable_scope": "online_adapter",
+  "update_rate": 0.36754763368162263
+}

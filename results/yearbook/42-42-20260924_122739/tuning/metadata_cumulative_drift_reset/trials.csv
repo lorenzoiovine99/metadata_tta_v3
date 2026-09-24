@@ -1,0 +1,7 @@
+trial_id,mean_delta_accuracy,std_delta_accuracy,worst_delta_accuracy,n_improved_years,param_adwin_delta,inherited_methods.metadata_cumulative_drift_reset.learning_rate,inherited_methods.metadata_cumulative_drift_reset.normalized_aux_loss_threshold,frozen_accuracy_1970,tta_accuracy_1970,delta_accuracy_1970
+d00,0.0,0.0,0.0,0,0.01,0.0001,0.5,0.9518072289156626,0.9518072289156626,0.0
+d01,0.0,0.0,0.0,0,0.03,0.0001,0.5,0.9518072289156626,0.9518072289156626,0.0
+d02,0.0,0.0,0.0,0,0.05,0.0001,0.5,0.9518072289156626,0.9518072289156626,0.0
+d03,0.0,0.0,0.0,0,0.1,0.0001,0.5,0.9518072289156626,0.9518072289156626,0.0
+d04,0.0,0.0,0.0,0,0.2,0.0001,0.5,0.9518072289156626,0.9518072289156626,0.0
+d05,0.0,0.0,0.0,0,0.3,0.0001,0.5,0.9518072289156626,0.9518072289156626,0.0

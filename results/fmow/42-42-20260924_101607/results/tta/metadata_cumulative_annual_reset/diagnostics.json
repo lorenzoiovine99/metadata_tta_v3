@@ -1,0 +1,16 @@
+{
+  "annual_reset_count": 4,
+  "aux_threshold_pass_count": 1103,
+  "aux_threshold_pass_rate": 0.04380634655864014,
+  "evaluation_order": "adapt_then_predict",
+  "mean_aux_loss": 0.21217051735797218,
+  "mean_gradient_norm": 271.2551152787856,
+  "mean_normalized_aux_loss": 0.0884819782435134,
+  "mean_parameter_delta": 0.014839185496719759,
+  "method": "metadata_cumulative_annual_reset",
+  "n_observations": 25179,
+  "n_trainable_parameters": 264256,
+  "n_updates": 1103,
+  "trainable_scope": "online_adapter",
+  "update_rate": 0.04380634655864014
+}

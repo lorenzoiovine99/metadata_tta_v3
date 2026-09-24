@@ -1,0 +1,6 @@
+2026-09-24 10:16:07 | INFO     | Metadata TTA V3
+2026-09-24 10:16:07 | INFO     | dataset=fmow mode=tune_and_test experiment_seed=42 split_seed=42
+2026-09-24 10:16:07 | INFO     | run_directory=results/fmow/42-42-20260924_101607
+2026-09-24 11:29:44 | INFO     | Effective run configuration written to results/fmow/42-42-20260924_101607/run_config.yaml
+2026-09-24 11:29:44 | INFO     | Final experiment completed successfully.
+2026-09-24 11:29:44 | INFO     | Results written to results/fmow/42-42-20260924_101607

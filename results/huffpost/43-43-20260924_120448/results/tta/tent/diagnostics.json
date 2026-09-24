@@ -1,0 +1,11 @@
+{
+  "batch_size": 128,
+  "evaluation_order": "predict_then_adapt",
+  "mean_entropy": 0.795234111910642,
+  "method": "tent",
+  "n_adapted_samples": 4881,
+  "n_observations": 40,
+  "n_updates": 40,
+  "steps": 1,
+  "update_rate": 1.0
+}

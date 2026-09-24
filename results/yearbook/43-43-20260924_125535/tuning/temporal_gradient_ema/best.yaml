@@ -1,0 +1,18 @@
+kind: tta
+name: temporal_gradient_ema
+score_name: mean_delta_accuracy
+score: 0.06024096385542166
+parameters: {}
+overrides:
+  methods.temporal_gradient_ema.learning_rate: 0.0001
+  methods.temporal_gradient_ema.normalized_aux_loss_threshold: 0.5
+  methods.temporal_gradient_ema.beta: 0.9
+  methods.temporal_gradient_ema.orthogonal_scale: 0.0
+  methods.temporal_gradient_ema.warmup_updates: 8
+  methods.temporal_gradient_ema.regularization: 0.0
+extra:
+  stream_years:
+  - 1970
+  stream_split: validation
+  experiment_seed: 43
+  split_seed: 43

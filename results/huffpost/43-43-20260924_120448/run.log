@@ -1,0 +1,6 @@
+2026-09-24 12:04:48 | INFO     | Metadata TTA V3
+2026-09-24 12:04:48 | INFO     | dataset=huffpost mode=tune_and_test experiment_seed=43 split_seed=43
+2026-09-24 12:04:48 | INFO     | run_directory=results/huffpost/43-43-20260924_120448
+2026-09-24 12:27:20 | INFO     | Effective run configuration written to results/huffpost/43-43-20260924_120448/run_config.yaml
+2026-09-24 12:27:20 | INFO     | Final experiment completed successfully.
+2026-09-24 12:27:20 | INFO     | Results written to results/huffpost/43-43-20260924_120448

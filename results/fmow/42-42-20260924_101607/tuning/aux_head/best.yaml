@@ -1,0 +1,22 @@
+kind: aux_head
+name: aux_head
+score_name: validation_aux_accuracy
+score: 0.7328499555587769
+parameters:
+  aux_lr: 0.0003
+overrides:
+  training.double_head.learning_rate: 0.0003
+extra:
+  years:
+  - 2002
+  - 2003
+  - 2004
+  - 2005
+  - 2006
+  - 2007
+  - 2008
+  - 2009
+  - 2010
+  - 2011
+  experiment_seed: 42
+  split_seed: 42

@@ -1,0 +1,102 @@
+{
+  "adwin_delta": 0.01,
+  "aux_threshold_pass_count": 1581,
+  "aux_threshold_pass_rate": 0.38169966199903427,
+  "drift_detector_detections": 8,
+  "drift_detector_observations": 4142,
+  "drift_events": [
+    {
+      "adwin_delta": 0.01,
+      "drift_event_number": 1,
+      "global_sample_index": 159,
+      "normalized_aux_loss": 0.3903594942554047,
+      "observation_index": 159,
+      "pre_update_aux_loss": 1.2239699363708496,
+      "year": 1973,
+      "year_sample_index": 23
+    },
+    {
+      "adwin_delta": 0.01,
+      "drift_event_number": 2,
+      "global_sample_index": 543,
+      "normalized_aux_loss": 0.6551579750990327,
+      "observation_index": 543,
+      "pre_update_aux_loss": 2.054244041442871,
+      "year": 1976,
+      "year_sample_index": 26
+    },
+    {
+      "adwin_delta": 0.01,
+      "drift_event_number": 3,
+      "global_sample_index": 639,
+      "normalized_aux_loss": 0.6972241234207447,
+      "observation_index": 639,
+      "pre_update_aux_loss": 2.1861422061920166,
+      "year": 1977,
+      "year_sample_index": 50
+    },
+    {
+      "adwin_delta": 0.01,
+      "drift_event_number": 4,
+      "global_sample_index": 1279,
+      "normalized_aux_loss": 2.416292163756868,
+      "observation_index": 1279,
+      "pre_update_aux_loss": 7.57627010345459,
+      "year": 1984,
+      "year_sample_index": 54
+    },
+    {
+      "adwin_delta": 0.01,
+      "drift_event_number": 5,
+      "global_sample_index": 1407,
+      "normalized_aux_loss": 3.45831444299062,
+      "observation_index": 1407,
+      "pre_update_aux_loss": 10.843524932861328,
+      "year": 1984,
+      "year_sample_index": 182
+    },
+    {
+      "adwin_delta": 0.01,
+      "drift_event_number": 6,
+      "global_sample_index": 2463,
+      "normalized_aux_loss": 1.2232081872401364,
+      "observation_index": 2463,
+      "pre_update_aux_loss": 3.835362195968628,
+      "year": 1995,
+      "year_sample_index": 4
+    },
+    {
+      "adwin_delta": 0.01,
+      "drift_event_number": 7,
+      "global_sample_index": 2591,
+      "normalized_aux_loss": 0.4926852416975921,
+      "observation_index": 2591,
+      "pre_update_aux_loss": 1.544811725616455,
+      "year": 1996,
+      "year_sample_index": 4
+    },
+    {
+      "adwin_delta": 0.01,
+      "drift_event_number": 8,
+      "global_sample_index": 2943,
+      "normalized_aux_loss": 3.007837465751353,
+      "observation_index": 2943,
+      "pre_update_aux_loss": 9.43105697631836,
+      "year": 1999,
+      "year_sample_index": 43
+    }
+  ],
+  "drift_reset_count": 8,
+  "drift_signal": "normalized_aux_loss",
+  "evaluation_order": "adapt_then_predict",
+  "mean_aux_loss": 2.11778979700434,
+  "mean_gradient_norm": 405.5558347443537,
+  "mean_normalized_aux_loss": 0.6754245586693811,
+  "mean_parameter_delta": 0.012572475794236704,
+  "method": "metadata_cumulative_drift_reset",
+  "n_observations": 4142,
+  "n_trainable_parameters": 264256,
+  "n_updates": 1581,
+  "trainable_scope": "online_adapter",
+  "update_rate": 0.38169966199903427
+}
