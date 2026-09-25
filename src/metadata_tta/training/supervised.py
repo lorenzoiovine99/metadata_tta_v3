@@ -6,6 +6,7 @@ from typing import Any
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torch.optim import Adam, Optimizer
 from torch.utils.data import (
@@ -511,12 +512,364 @@ def initialize_double_from_single(
 
     return double_model
 
+def _snapshot_main_path_state(
+    model: DoubleHeadClassifier,
+) -> dict[str, torch.Tensor]:
+    """
+    Snapshot every state tensor belonging to the main path.
+
+    aux_head.* is intentionally excluded because that is the
+    only component allowed to change during auxiliary training.
+    """
+
+    return {
+        name: value.detach().cpu().clone()
+        for name, value
+        in model.state_dict().items()
+        if not name.startswith(
+            "aux_head."
+        )
+    }
+
+
+def _assert_main_path_unchanged(
+    *,
+    model: DoubleHeadClassifier,
+    before: dict[str, torch.Tensor],
+) -> None:
+    """
+    Fail hard if auxiliary training modified any parameter or
+    buffer belonging to:
+
+        online_adapter
+        feature_block
+        main_head
+
+    This includes BatchNorm buffers.
+    """
+
+    after = {
+        name: value.detach().cpu()
+        for name, value
+        in model.state_dict().items()
+        if not name.startswith(
+            "aux_head."
+        )
+    }
+
+    if set(before) != set(after):
+        raise RuntimeError(
+            "Main-path invariant failed: "
+            "state-dict keys changed during Aux training."
+        )
+
+    for name in before:
+
+        if not torch.equal(
+            before[name],
+            after[name],
+        ):
+            max_difference = float(
+                (
+                    before[name].float()
+                    - after[name].float()
+                )
+                .abs()
+                .max()
+                .item()
+            )
+
+            raise RuntimeError(
+                "Main-path invariant failed during "
+                "Aux training: "
+                f"{name!r} changed. "
+                f"max_abs_difference="
+                f"{max_difference:.12e}"
+            )
+
+
+def _gradient_alignment_objective(
+    *,
+    model: DoubleHeadClassifier,
+    batch_X: torch.Tensor,
+    batch_main: torch.Tensor,
+    batch_aux: torch.Tensor,
+    epsilon: float,
+    create_graph: bool,
+) -> tuple[
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor,
+]:
+    """
+    Compute the auxiliary CE together with a per-sample
+    representation-gradient alignment penalty.
+
+    IMPORTANT
+    ---------
+    The residual adapter output is DETACHED.
+
+    Therefore no gradient from this objective can update the
+    source adapter, feature block, or main head.
+
+    We only ask:
+
+        if CE_aux were later used at test time to update the
+        adapter, does its representation-space gradient point
+        in a direction compatible with the true main loss?
+
+    For every sample:
+
+        g_main = d L_main / d adapted
+        g_aux  = d L_aux  / d adapted
+
+        L_align = ReLU(
+            -cos(g_aux, g_main)
+        )
+
+    create_graph=True is needed during Aux training so the
+    alignment penalty can change aux_head parameters.
+    """
+
+    # --------------------------------------------------------
+    # Frozen source representation.
+    #
+    # Detaching here is deliberate: the source/main path is
+    # not part of the optimization graph.
+    # --------------------------------------------------------
+
+    with torch.no_grad():
+
+        adapted_frozen = (
+            model.online_adapter(
+                batch_X
+            )
+        )
+
+    adapted = (
+        adapted_frozen
+        .detach()
+        .requires_grad_(True)
+    )
+
+    # feature_block / main_head are frozen parameters, but
+    # autograd is allowed to differentiate THROUGH them with
+    # respect to `adapted`.
+    shared = model.feature_block(
+        adapted
+    )
+
+    main_logits = model.main_head(
+        shared
+    )
+
+    aux_logits = model.aux_head(
+        shared
+    )
+
+    aux_ce = F.cross_entropy(
+        aux_logits,
+        batch_aux,
+        reduction="mean",
+    )
+
+    # Sum reduction is intentional.
+    #
+    # In eval mode there is no cross-sample BatchNorm coupling,
+    # therefore row i of d(loss_sum)/d(adapted) corresponds to
+    # sample i's own gradient.
+    main_loss_sum = F.cross_entropy(
+        main_logits,
+        batch_main,
+        reduction="sum",
+    )
+
+    aux_loss_sum = F.cross_entropy(
+        aux_logits,
+        batch_aux,
+        reduction="sum",
+    )
+
+    main_gradient = torch.autograd.grad(
+        main_loss_sum,
+        adapted,
+        retain_graph=True,
+        create_graph=False,
+    )[0].detach()
+
+    aux_gradient = torch.autograd.grad(
+        aux_loss_sum,
+        adapted,
+        retain_graph=True,
+        create_graph=bool(
+            create_graph
+        ),
+    )[0]
+
+    main_flat = main_gradient.flatten(
+        start_dim=1
+    )
+
+    aux_flat = aux_gradient.flatten(
+        start_dim=1
+    )
+
+    cosine = F.cosine_similarity(
+        aux_flat,
+        main_flat,
+        dim=1,
+        eps=float(
+            epsilon
+        ),
+    )
+
+    alignment_penalty = (
+        F.relu(
+            -cosine
+        )
+        .mean()
+    )
+
+    return (
+        aux_ce,
+        alignment_penalty,
+        cosine,
+    )
+
+
+def _aux_alignment_validation_metrics(
+    *,
+    model: DoubleHeadClassifier,
+    loader: DataLoader,
+    device: torch.device,
+    epsilon: float,
+) -> tuple[
+    float,
+    float,
+    float,
+    float,
+]:
+    """
+    Validation diagnostics.
+
+    Early stopping is STILL based only on auxiliary CE.
+    Main labels are used here only to report gradient geometry.
+    """
+
+    model.eval()
+
+    total_aux_loss = 0.0
+    total_samples = 0
+
+    cosine_sum = 0.0
+    conflict_count = 0
+    alignment_sum = 0.0
+
+    for (
+        batch_X,
+        batch_main,
+        batch_aux,
+    ) in loader:
+
+        batch_X = batch_X.to(
+            device
+        )
+
+        batch_main = batch_main.to(
+            device
+        )
+
+        batch_aux = batch_aux.to(
+            device
+        )
+
+        with torch.enable_grad():
+
+            (
+                aux_loss,
+                _alignment_penalty,
+                cosine,
+            ) = _gradient_alignment_objective(
+                model=model,
+                batch_X=batch_X,
+                batch_main=batch_main,
+                batch_aux=batch_aux,
+                epsilon=epsilon,
+                create_graph=False,
+            )
+
+        batch_n = int(
+            len(
+                batch_X
+            )
+        )
+
+        total_aux_loss += (
+            float(
+                aux_loss.detach().item()
+            )
+            * batch_n
+        )
+
+        cosine_detached = (
+            cosine
+            .detach()
+        )
+
+        cosine_sum += float(
+            cosine_detached.sum().item()
+        )
+
+        alignment_sum += float(
+            F.relu(
+                -cosine_detached
+            )
+            .sum()
+            .item()
+        )
+
+        conflict_count += int(
+            (
+                cosine_detached < 0.0
+            )
+            .sum()
+            .item()
+        )
+
+        total_samples += batch_n
+
+    denominator = max(
+        total_samples,
+        1,
+    )
+
+    return (
+        float(
+            total_aux_loss
+            / denominator
+        ),
+        float(
+            alignment_sum
+            / denominator
+        ),
+        float(
+            cosine_sum
+            / denominator
+        ),
+        float(
+            conflict_count
+            / denominator
+        ),
+    )
+
 def train_aux_head_only(
     *,
     model: DoubleHeadClassifier,
     X: np.ndarray,
+    y_main: np.ndarray,
     y_aux: np.ndarray,
     X_validation: np.ndarray,
+    y_main_validation: np.ndarray,
     y_aux_validation: np.ndarray,
     learning_rate: float,
     weight_decay: float,
@@ -525,20 +878,52 @@ def train_aux_head_only(
     patience: int,
     min_delta: float,
     device: torch.device,
+    gradient_alignment_weight: float = 0.0,
+    gradient_alignment_epsilon: float = 1.0e-8,
     log_prefix: str | None = None,
 ) -> DoubleHeadClassifier:
     """
     Train ONLY the auxiliary head.
 
-    The complete main-task path remains frozen and in eval mode,
-    so its parameters, BatchNorm statistics and dropout behaviour
-    cannot change.
+    The complete source/main path remains frozen:
+
+        online_adapter
+        feature_block
+        main_head
+
+    When gradient_alignment_weight > 0, source main labels are
+    used ONLY to teach the auxiliary head to produce a metadata
+    gradient whose representation-space direction is compatible
+    with the main-task loss.
+
+    No main-path parameter or buffer is allowed to change.
+
+    Training objective:
+
+        L =
+            CE_aux
+            +
+            lambda_align
+            * ReLU(
+                -cos(
+                    d CE_aux / d adapted,
+                    d CE_main / d adapted
+                )
+            )
+
+    Only aux_head parameters are optimized.
     """
 
     X = np.asarray(
         X,
         dtype=np.float32,
     )
+
+    y_main = np.asarray(
+        y_main,
+        dtype=np.int64,
+    )
+
     y_aux = np.asarray(
         y_aux,
         dtype=np.int64,
@@ -548,31 +933,157 @@ def train_aux_head_only(
         X_validation,
         dtype=np.float32,
     )
+
+    y_main_validation = np.asarray(
+        y_main_validation,
+        dtype=np.int64,
+    )
+
     y_aux_validation = np.asarray(
         y_aux_validation,
         dtype=np.int64,
     )
 
-    model = model.to(device)
+    if X.ndim != 2:
+        raise ValueError(
+            f"X must be 2-D, got {X.shape}."
+        )
 
-    # --------------------------------------------------------
-    # Freeze the complete model, then enable aux head only.
-    # --------------------------------------------------------
+    if X_validation.ndim != 2:
+        raise ValueError(
+            "X_validation must be 2-D."
+        )
+
+    if (
+        len(X) != len(y_main)
+        or len(X) != len(y_aux)
+    ):
+        raise ValueError(
+            "X, y_main and y_aux must have "
+            "the same length."
+        )
+
+    if (
+        len(X_validation)
+        != len(y_main_validation)
+        or len(X_validation)
+        != len(y_aux_validation)
+    ):
+        raise ValueError(
+            "Validation X/y_main/y_aux must "
+            "have the same length."
+        )
+
+    gradient_alignment_weight = float(
+        gradient_alignment_weight
+    )
+
+    gradient_alignment_epsilon = float(
+        gradient_alignment_epsilon
+    )
+
+    if gradient_alignment_weight < 0.0:
+        raise ValueError(
+            "gradient_alignment_weight must be >= 0."
+        )
+
+    if gradient_alignment_epsilon <= 0.0:
+        raise ValueError(
+            "gradient_alignment_epsilon must be > 0."
+        )
+
+    model = model.to(
+        device
+    )
+
+    # ========================================================
+    # FREEZE COMPLETE SOURCE/MAIN PATH
+    # ========================================================
 
     for parameter in model.parameters():
-        parameter.requires_grad_(False)
 
-    for parameter in model.aux_head.parameters():
-        parameter.requires_grad_(True)
+        parameter.requires_grad_(
+            False
+        )
 
-    # Keep backbone / BatchNorm / Dropout deterministic.
+    for parameter in (
+        model.aux_head.parameters()
+    ):
+
+        parameter.requires_grad_(
+            True
+        )
+
+    # BN buffers and Dropout must remain deterministic.
     model.eval()
+
+    # Linear aux_head has no train/eval-dependent behaviour,
+    # but keeping this explicit documents the trainable scope.
     model.aux_head.train()
+
+    # ========================================================
+    # HARD INVARIANT SNAPSHOT
+    # ========================================================
+
+    main_path_before = (
+        _snapshot_main_path_state(
+            model
+        )
+    )
+
+    invariant_X = (
+        X_validation[
+            : min(
+                64,
+                len(
+                    X_validation
+                ),
+            )
+        ]
+    )
+
+    if len(invariant_X) == 0:
+
+        invariant_X = X[
+            : min(
+                64,
+                len(X),
+            )
+        ]
+
+    invariant_tensor = (
+        torch.as_tensor(
+            invariant_X,
+            dtype=torch.float32,
+            device=device,
+        )
+    )
+
+    model.eval()
+
+    with torch.no_grad():
+
+        main_logits_before = (
+            model(
+                invariant_tensor
+            )
+            .detach()
+            .cpu()
+            .clone()
+        )
+
+    # ========================================================
+    # OPTIMIZER: AUX HEAD ONLY
+    # ========================================================
 
     optimizer = Adam(
         model.aux_head.parameters(),
-        lr=float(learning_rate),
-        weight_decay=float(weight_decay),
+        lr=float(
+            learning_rate
+        ),
+        weight_decay=float(
+            weight_decay
+        ),
     )
 
     criterion = nn.CrossEntropyLoss()
@@ -583,6 +1094,10 @@ def train_aux_head_only(
             dtype=torch.float32,
         ),
         torch.as_tensor(
+            y_main,
+            dtype=torch.long,
+        ),
+        torch.as_tensor(
             y_aux,
             dtype=torch.long,
         ),
@@ -590,7 +1105,9 @@ def train_aux_head_only(
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=int(batch_size),
+        batch_size=int(
+            batch_size
+        ),
         shuffle=True,
         drop_last=False,
     )
@@ -601,6 +1118,10 @@ def train_aux_head_only(
             dtype=torch.float32,
         ),
         torch.as_tensor(
+            y_main_validation,
+            dtype=torch.long,
+        ),
+        torch.as_tensor(
             y_aux_validation,
             dtype=torch.long,
         ),
@@ -608,12 +1129,21 @@ def train_aux_head_only(
 
     validation_loader = DataLoader(
         validation_dataset,
-        batch_size=int(batch_size),
+        batch_size=int(
+            batch_size
+        ),
         shuffle=False,
         drop_last=False,
     )
 
-    best_validation_loss = float("inf")
+    best_validation_objective = float(
+        "inf"
+    )
+
+    best_validation_loss = float(
+        "inf"
+    )
+
     best_aux_state = copy.deepcopy(
         model.aux_head.state_dict()
     )
@@ -626,136 +1156,277 @@ def train_aux_head_only(
         else ""
     )
 
-    for epoch_index in range(int(epochs)):
+    print(
+        f"{prefix}"
+        "AUX TRAINING CONFIG | "
+        f"gradient_alignment_weight="
+        f"{gradient_alignment_weight:.6f} | "
+        f"gradient_alignment_epsilon="
+        f"{gradient_alignment_epsilon:.2e}"
+    )
 
-        epoch = epoch_index + 1
+    # ========================================================
+    # TRAIN
+    # ========================================================
+
+    for epoch_index in range(
+        int(
+            epochs
+        )
+    ):
+
+        epoch = (
+            epoch_index + 1
+        )
 
         model.eval()
         model.aux_head.train()
 
-        total_train_loss = 0.0
+        total_train_aux_loss = 0.0
+        total_train_alignment = 0.0
+
         total_train_samples = 0
+
+        train_cosine_sum = 0.0
+        train_conflict_count = 0
 
         for (
             batch_X,
+            batch_main,
             batch_aux,
         ) in train_loader:
 
-            batch_X = batch_X.to(device)
-            batch_aux = batch_aux.to(device)
+            batch_X = batch_X.to(
+                device
+            )
+
+            batch_main = batch_main.to(
+                device
+            )
+
+            batch_aux = batch_aux.to(
+                device
+            )
 
             optimizer.zero_grad(
                 set_to_none=True
             )
 
-            # Frozen deterministic representation.
-            with torch.no_grad():
-                shared = (
-                    model.extract_shared_features(
-                        batch_X
+            # =================================================
+            # ALIGNED AUX TRAINING
+            # =================================================
+
+            if (
+                gradient_alignment_weight
+                > 0.0
+            ):
+
+                (
+                    aux_loss,
+                    alignment_penalty,
+                    cosine,
+                ) = _gradient_alignment_objective(
+                    model=model,
+                    batch_X=batch_X,
+                    batch_main=batch_main,
+                    batch_aux=batch_aux,
+                    epsilon=(
+                        gradient_alignment_epsilon
+                    ),
+                    create_graph=True,
+                )
+
+                loss = (
+                    aux_loss
+                    + gradient_alignment_weight
+                    * alignment_penalty
+                )
+
+            # =================================================
+            # EXACT LEGACY AUX-ONLY BEHAVIOUR
+            # =================================================
+
+            else:
+
+                with torch.no_grad():
+
+                    shared = (
+                        model.extract_shared_features(
+                            batch_X
+                        )
+                    )
+
+                aux_logits = (
+                    model.aux_head(
+                        shared
                     )
                 )
 
-            aux_logits = model.aux_head(
-                shared
-            )
-
-            loss = criterion(
-                aux_logits,
-                batch_aux,
-            )
-
-            loss.backward()
-            optimizer.step()
-
-            batch_n = int(
-                len(batch_X)
-            )
-
-            total_train_loss += (
-                float(loss.detach().item())
-                * batch_n
-            )
-
-            total_train_samples += batch_n
-
-        train_loss = (
-            total_train_loss
-            / max(
-                total_train_samples,
-                1,
-            )
-        )
-
-        # ----------------------------------------------------
-        # AUX VALIDATION
-        # ----------------------------------------------------
-
-        model.eval()
-
-        total_validation_loss = 0.0
-        total_validation_samples = 0
-
-        with torch.no_grad():
-
-            for (
-                batch_X,
-                batch_aux,
-            ) in validation_loader:
-
-                batch_X = batch_X.to(device)
-                batch_aux = batch_aux.to(device)
-
-                shared = (
-                    model.extract_shared_features(
-                        batch_X
-                    )
-                )
-
-                aux_logits = model.aux_head(
-                    shared
-                )
-
-                loss = criterion(
+                aux_loss = criterion(
                     aux_logits,
                     batch_aux,
                 )
 
-                batch_n = int(
-                    len(batch_X)
+                alignment_penalty = (
+                    aux_loss.new_zeros(
+                        ()
+                    )
                 )
 
-                total_validation_loss += (
-                    float(loss.item())
-                    * batch_n
+                cosine = None
+
+                loss = aux_loss
+
+            loss.backward()
+
+            optimizer.step()
+
+            batch_n = int(
+                len(
+                    batch_X
                 )
-
-                total_validation_samples += batch_n
-
-        validation_loss = (
-            total_validation_loss
-            / max(
-                total_validation_samples,
-                1,
             )
+
+            total_train_aux_loss += (
+                float(
+                    aux_loss
+                    .detach()
+                    .item()
+                )
+                * batch_n
+            )
+
+            total_train_alignment += (
+                float(
+                    alignment_penalty
+                    .detach()
+                    .item()
+                )
+                * batch_n
+            )
+
+            if cosine is not None:
+
+                cosine_detached = (
+                    cosine.detach()
+                )
+
+                train_cosine_sum += (
+                    float(
+                        cosine_detached
+                        .sum()
+                        .item()
+                    )
+                )
+
+                train_conflict_count += (
+                    int(
+                        (
+                            cosine_detached
+                            < 0.0
+                        )
+                        .sum()
+                        .item()
+                    )
+                )
+
+            total_train_samples += (
+                batch_n
+            )
+
+        train_denominator = max(
+            total_train_samples,
+            1,
         )
 
-        improved = (
+        train_aux_loss = float(
+            total_train_aux_loss
+            / train_denominator
+        )
+
+        train_alignment = float(
+            total_train_alignment
+            / train_denominator
+        )
+
+        if (
+            gradient_alignment_weight
+            > 0.0
+        ):
+
+            train_cosine = float(
+                train_cosine_sum
+                / train_denominator
+            )
+
+            train_conflict_rate = float(
+                train_conflict_count
+                / train_denominator
+            )
+
+        else:
+
+            train_cosine = float(
+                "nan"
+            )
+
+            train_conflict_rate = float(
+                "nan"
+            )
+
+        # ====================================================
+        # VALIDATION
+        # ====================================================
+
+        (
+            validation_loss,
+            validation_alignment,
+            validation_gradient_cosine,
+            validation_conflict_rate,
+        ) = _aux_alignment_validation_metrics(
+            model=model,
+            loader=validation_loader,
+            device=device,
+            epsilon=(
+                gradient_alignment_epsilon
+            ),
+        )
+
+        validation_objective = (
             validation_loss
+            + gradient_alignment_weight
+            * validation_alignment
+        )
+
+        # IMPORTANT:
+        # early stopping remains based ONLY on Aux CE.
+        #
+        # Main-task labels affect training geometry, but they do
+        # not replace the original auxiliary validation target.
+        improved = (
+            validation_objective
             < (
-                best_validation_loss
-                - float(min_delta)
+                best_validation_objective
+                - float(
+                    min_delta
+                )
             )
         )
 
         if improved:
 
+            best_validation_objective = (
+                validation_objective
+            )
+
             best_validation_loss = (
                 validation_loss
             )
 
-            best_aux_state = copy.deepcopy(
-                model.aux_head.state_dict()
+            best_aux_state = (
+                copy.deepcopy(
+                    model.aux_head.state_dict()
+                )
             )
 
             epochs_without_improvement = 0
@@ -766,16 +1437,35 @@ def train_aux_head_only(
 
         print(
             f"{prefix}"
-            f"aux-only epoch {epoch}/{epochs} | "
-            f"train_aux_loss={train_loss:.6f} | "
-            f"val_aux_loss={validation_loss:.6f} | "
+            f"aux-only epoch "
+            f"{epoch}/{epochs} | "
+            f"train_aux_loss="
+            f"{train_aux_loss:.6f} | "
+            f"train_align="
+            f"{train_alignment:.6f} | "
+            f"train_grad_cos="
+            f"{train_cosine:+.6f} | "
+            f"train_conflict="
+            f"{train_conflict_rate:.4f} | "
+            f"val_aux_loss="
+            f"{validation_loss:.6f} | "
+            f"val_align="
+            f"{validation_alignment:.6f} | "
+            f"val_objective="
+            f"{validation_objective:.6f} | "
+            f"val_grad_cos="
+            f"{validation_gradient_cosine:+.6f} | "
+            f"val_conflict="
+            f"{validation_conflict_rate:.4f} | "
             f"best_val_aux_loss="
             f"{best_validation_loss:.6f}"
         )
 
         if (
             epochs_without_improvement
-            >= int(patience)
+            >= int(
+                patience
+            )
         ):
 
             print(
@@ -786,13 +1476,102 @@ def train_aux_head_only(
 
             break
 
+    # ========================================================
+    # RESTORE BEST AUX CHECKPOINT
+    # ========================================================
+
     model.aux_head.load_state_dict(
         best_aux_state
     )
 
-    # Restore gradients for later TTA configuration.
+    model.eval()
+
+    # ========================================================
+    # HARD MAIN-PATH INVARIANT
+    # ========================================================
+
+    _assert_main_path_unchanged(
+        model=model,
+        before=main_path_before,
+    )
+
+    with torch.no_grad():
+
+        main_logits_after = (
+            model(
+                invariant_tensor
+            )
+            .detach()
+            .cpu()
+        )
+
+    if not torch.equal(
+        main_logits_before,
+        main_logits_after,
+    ):
+
+        max_difference = float(
+            (
+                main_logits_before
+                - main_logits_after
+            )
+            .abs()
+            .max()
+            .item()
+        )
+
+        raise RuntimeError(
+            "Aux training changed main predictions. "
+            f"max_abs_difference="
+            f"{max_difference:.12e}"
+        )
+
+    print(
+        f"{prefix}"
+        "[CHECK][PASS] Aux training preserved "
+        "the complete main path exactly"
+    )
+
+    # ========================================================
+    # FINAL ALIGNMENT DIAGNOSTIC
+    # ========================================================
+
+    (
+        final_validation_aux_loss,
+        final_validation_alignment,
+        final_validation_cosine,
+        final_validation_conflict_rate,
+    ) = _aux_alignment_validation_metrics(
+        model=model,
+        loader=validation_loader,
+        device=device,
+        epsilon=(
+            gradient_alignment_epsilon
+        ),
+    )
+
+    print(
+        f"{prefix}"
+        "AUX FINAL | "
+        f"val_aux_loss="
+        f"{final_validation_aux_loss:.6f} | "
+        f"val_align="
+        f"{final_validation_alignment:.6f} | "
+        f"val_grad_cos="
+        f"{final_validation_cosine:+.6f} | "
+        f"val_conflict="
+        f"{final_validation_conflict_rate:.4f}"
+    )
+
+    # Restore gradients for later TTA setup.
+    #
+    # MetadataTTA will subsequently freeze everything except
+    # online_adapter according to its own configuration.
     for parameter in model.parameters():
-        parameter.requires_grad_(True)
+
+        parameter.requires_grad_(
+            True
+        )
 
     model.eval()
 

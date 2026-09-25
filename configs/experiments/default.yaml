@@ -50,6 +50,8 @@ training:
     weight_decay: 0.0
     batch_size: 32
     epochs: 50
+    gradient_alignment_weight: 0.0
+    gradient_alignment_epsilon: 1.0e-8
 
     early_stopping:
       enabled: true
@@ -72,7 +74,7 @@ methods:
     enabled: true
 
   supervised_reference:
-    enabled: true
+    enabled: false
 
   metadata_episodic:
     enabled: true
@@ -82,6 +84,8 @@ methods:
     gradient_clip: 0.1
     normalized_aux_loss_min: 0.0
     normalized_aux_loss_max: 1.0
+    main_preservation_enabled: false
+    gradient_norm_max: null
     steps: 1
 
   metadata_cumulative:
@@ -92,16 +96,20 @@ methods:
     gradient_clip: 0.1
     normalized_aux_loss_min: 0.0
     normalized_aux_loss_max: 1.0
+    main_preservation_enabled: false
+    gradient_norm_max: null
     steps: 1
 
   metadata_cumulative_annual_reset:
-    enabled: true
+    enabled: false
     learning_rate: 0.0003
     batch_size: 1
     regularization: 0.0
     gradient_clip: 0.1
     normalized_aux_loss_min: 0.0
     normalized_aux_loss_max: 1.0
+    main_preservation_enabled: false
+    gradient_norm_max: null
     steps: 1
 
   metadata_cumulative_drift_reset:
@@ -112,30 +120,35 @@ methods:
     gradient_clip: 0.1
     normalized_aux_loss_min: 0.0
     normalized_aux_loss_max: 1.0
+    main_preservation_enabled: false
+    gradient_norm_max: null
     steps: 1
     drift_signal: normalized_aux_loss
     adwin_delta: 0.10
 
   metadata_cumulative_drift_annual_reset:
-    enabled: true
+    enabled: false
     learning_rate: 0.0003
     batch_size: 1
     regularization: 0.0
     gradient_clip: 0.1
     normalized_aux_loss_min: 0.0
     normalized_aux_loss_max: 1.0
+    main_preservation_enabled: false
+    gradient_norm_max: null
     steps: 1
     drift_signal: normalized_aux_loss
     adwin_delta: 0.10
 
   temporal_gradient_ema:
-    enabled: true
+    enabled: false
     learning_rate: 0.0003
     batch_size: 1
     regularization: 0.01
     gradient_clip: 0.1
     normalized_aux_loss_min: 0.0
     normalized_aux_loss_max: 1.0
+    main_preservation_enabled: false
     steps: 1
     beta: 0.95
     orthogonal_scale: 0.5

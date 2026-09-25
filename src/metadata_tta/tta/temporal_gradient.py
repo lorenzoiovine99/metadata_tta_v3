@@ -16,17 +16,31 @@ class TemporalGradientEMATTA(MetadataTTA):
     """
     Temporal Gradient Metadata TTA.
 
-    Extends Raw Metadata TTA with a persistent gradient
-    direction estimated causally through an exponential
-    moving average of previous metadata gradients.
+    Extends Metadata TTA with a persistent gradient direction
+    estimated causally through an exponential moving average
+    of previous accepted metadata gradients.
+
+    V4 main-preserving order:
+
+        raw auxiliary gradient
+            ->
+        optional main-preserving gradient surgery
+            ->
+        safe metadata gradient
+            ->
+        temporal EMA / decomposition
+            ->
+        source-anchor gradient
+            ->
+        optimizer step
 
     During warmup:
-        use the raw metadata gradient.
+        use the current safe metadata gradient.
 
     After warmup:
-        decompose the current raw gradient into a component
-        parallel to the temporal EMA direction and an
-        orthogonal component:
+        decompose the current safe metadata gradient into a
+        component parallel to the temporal EMA direction and
+        an orthogonal component:
 
             g = g_parallel + g_orthogonal
 
@@ -36,7 +50,10 @@ class TemporalGradientEMATTA(MetadataTTA):
                 g_parallel
                 + orthogonal_scale * g_orthogonal
 
-    The source-anchor gradient is added afterwards.
+    The temporal EMA stores the safe metadata gradient, not the
+    unprotected raw auxiliary gradient.
+
+    Source-anchor regularization is added afterwards.
 
     Only online_adapter is trainable.
 
@@ -54,17 +71,6 @@ class TemporalGradientEMATTA(MetadataTTA):
         device: torch.device,
     ) -> None:
 
-        # MetadataTTA initializes:
-        #
-        # - model copy
-        # - adapter-only trainability
-        # - source anchor
-        # - optimizer
-        # - metadata gate
-        #
-        # The temporal-gradient config is deliberately
-        # self-contained and therefore includes the common
-        # Metadata-TTA optimization parameters too.
         super().__init__(
             source_model=source_model,
             config=config,
@@ -154,8 +160,8 @@ class TemporalGradientEMATTA(MetadataTTA):
             | None
         ) = None
 
-        # Counts actual parameter updates / accepted metadata
-        # gradients that have contributed to temporal memory.
+        # Counts actual accepted metadata gradients that have
+        # contributed to temporal memory.
         self.temporal_update_count = 0
 
         self.n_warmup_updates = 0
@@ -305,11 +311,10 @@ class TemporalGradientEMATTA(MetadataTTA):
         list[torch.Tensor],
     ]:
         """
-        Compute the auxiliary metadata gradient only.
+        Compute the raw auxiliary metadata gradient only.
 
-        Source-anchor regularization is deliberately not
-        included here because temporal filtering should operate
-        on the metadata signal, not on the anchor.
+        Main-preserving surgery and source-anchor regularization
+        are deliberately not included here.
         """
 
         self.optimizer.zero_grad(
@@ -363,21 +368,24 @@ class TemporalGradientEMATTA(MetadataTTA):
 
     def _update_gradient_ema(
         self,
-        raw_gradient: list[torch.Tensor],
+        accepted_gradient: list[torch.Tensor],
     ) -> None:
         """
         Update temporal memory after processing the current
-        gradient.
+        accepted metadata gradient.
 
-        Therefore the EMA used to transform sample t contains
-        only gradients from samples < t.
+        In V4, accepted_gradient is the main-preserved gradient
+        when main preservation is enabled.
+
+        The EMA used to transform sample t contains only
+        gradients from samples < t.
         """
 
         if self.gradient_ema is None:
 
             self.gradient_ema = (
                 self._clone_gradient(
-                    raw_gradient
+                    accepted_gradient
                 )
             )
 
@@ -402,7 +410,7 @@ class TemporalGradientEMATTA(MetadataTTA):
                 current_gradient,
             ) in zip(
                 self.gradient_ema,
-                raw_gradient,
+                accepted_gradient,
             )
         ]
 
@@ -412,17 +420,27 @@ class TemporalGradientEMATTA(MetadataTTA):
 
     def _temporal_gradient(
         self,
-        raw_gradient: list[torch.Tensor],
+        accepted_gradient: list[torch.Tensor],
     ) -> tuple[
         list[torch.Tensor],
         dict[str, float],
     ]:
         """
         Build the temporally filtered metadata gradient.
+
+        accepted_gradient is:
+            - raw metadata gradient when main preservation is
+              disabled;
+            - safe/main-preserved metadata gradient when main
+              preservation is enabled.
+
+        For backward compatibility, diagnostic names still use
+        "raw_gradient_norm" to mean the gradient entering the
+        temporal filter.
         """
 
         raw_norm = self._tensor_list_norm(
-            raw_gradient
+            accepted_gradient
         )
 
         # ----------------------------------------------------
@@ -437,7 +455,7 @@ class TemporalGradientEMATTA(MetadataTTA):
 
             return (
                 self._clone_gradient(
-                    raw_gradient
+                    accepted_gradient
                 ),
                 {
                     "raw_gradient_norm":
@@ -481,7 +499,7 @@ class TemporalGradientEMATTA(MetadataTTA):
 
             return (
                 self._clone_gradient(
-                    raw_gradient
+                    accepted_gradient
                 ),
                 {
                     "raw_gradient_norm":
@@ -514,7 +532,7 @@ class TemporalGradientEMATTA(MetadataTTA):
 
         projection_coefficient = (
             self._dot(
-                raw_gradient,
+                accepted_gradient,
                 ema_gradient,
             )
             / torch.clamp(
@@ -532,14 +550,14 @@ class TemporalGradientEMATTA(MetadataTTA):
         ]
 
         orthogonal_gradient = [
-            raw_component
+            current_component
             - parallel_component
 
             for (
-                raw_component,
+                current_component,
                 parallel_component,
             ) in zip(
-                raw_gradient,
+                accepted_gradient,
                 parallel_gradient,
             )
         ]
@@ -573,7 +591,7 @@ class TemporalGradientEMATTA(MetadataTTA):
         )
 
         cosine = self._tensor_list_cosine(
-            raw_gradient,
+            accepted_gradient,
             ema_gradient,
         )
 
@@ -833,9 +851,14 @@ class TemporalGradientEMATTA(MetadataTTA):
             return AdaptationResult(
                 applied=False,
                 diagnostics={
-                    "reason": "below_aux_loss_window",
-                    "aux_loss": aux_loss_value,
-                    "normalized_aux_loss": normalized_aux_loss,
+                    "reason":
+                        "below_aux_loss_window",
+
+                    "aux_loss":
+                        aux_loss_value,
+
+                    "normalized_aux_loss":
+                        normalized_aux_loss,
                 },
             )
 
@@ -848,13 +871,53 @@ class TemporalGradientEMATTA(MetadataTTA):
             return AdaptationResult(
                 applied=False,
                 diagnostics={
-                    "reason": "above_aux_loss_window",
-                    "aux_loss": aux_loss_value,
-                    "normalized_aux_loss": normalized_aux_loss,
+                    "reason":
+                        "above_aux_loss_window",
+
+                    "aux_loss":
+                        aux_loss_value,
+
+                    "normalized_aux_loss":
+                        normalized_aux_loss,
                 },
             )
 
         self.n_aux_window_pass += 1
+
+        # ====================================================
+        # IMMUTABLE SOURCE MAIN REFERENCE
+        # ====================================================
+
+        source_reference: (
+            dict[str, Any]
+            | None
+        ) = None
+
+        if self.main_preservation_enabled:
+
+            source_reference = (
+                self._source_main_reference(
+                    x_tensor
+                )
+            )
+
+            self.n_main_reference_evaluations += 1
+
+            self.sum_source_main_confidence += (
+                float(
+                    source_reference[
+                        "confidence"
+                    ]
+                )
+            )
+
+            self.sum_source_main_margin += (
+                float(
+                    source_reference[
+                        "margin"
+                    ]
+                )
+            )
 
         # ====================================================
         # ONE OR MORE ADAPTATION STEPS
@@ -862,11 +925,23 @@ class TemporalGradientEMATTA(MetadataTTA):
 
         final_step_diagnostics: dict[
             str,
-            float,
+            Any,
         ] = {}
 
         parameter_gradient_sum = 0.0
         parameter_delta_sum = 0.0
+
+        local_guard_evaluations = 0
+        local_conflicts = 0
+
+        local_sum_cosine = 0.0
+        local_sum_projection_strength = 0.0
+
+        local_sum_raw_aux_gradient_norm = 0.0
+        local_sum_safe_aux_gradient_norm = 0.0
+        local_sum_guard_gradient_norm = 0.0
+
+        local_sum_removed_fraction = 0.0
 
         for _ in range(
             self.steps
@@ -884,12 +959,182 @@ class TemporalGradientEMATTA(MetadataTTA):
                 )
             )
 
+            # ================================================
+            # V4 MAIN-PRESERVING SURGERY
+            # ================================================
+
+            if self.main_preservation_enabled:
+
+                if source_reference is None:
+                    raise RuntimeError(
+                        "Main-preserving Temporal Gradient TTA "
+                        "is enabled without a source reference."
+                    )
+
+                guard_gradients = (
+                    self._main_guard_gradient(
+                        x_tensor=x_tensor,
+                        top1_indices=(
+                            source_reference[
+                                "top1_indices"
+                            ]
+                        ),
+                        top2_indices=(
+                            source_reference[
+                                "top2_indices"
+                            ]
+                        ),
+                    )
+                )
+
+                (
+                    accepted_gradient,
+                    surgery_diagnostics,
+                ) = (
+                    self._main_preserving_aux_gradient(
+                        raw_aux_gradients=(
+                            raw_gradient
+                        ),
+                        guard_gradients=(
+                            guard_gradients
+                        ),
+                        source_confidence=float(
+                            source_reference[
+                                "confidence"
+                            ]
+                        ),
+                    )
+                )
+
+                # --------------------------------------------
+                # Global surgery diagnostics inherited from
+                # MetadataTTA
+                # --------------------------------------------
+
+                self.n_main_guard_evaluations += 1
+
+                if bool(
+                    surgery_diagnostics[
+                        "main_gradient_conflict"
+                    ]
+                ):
+                    self.n_main_gradient_conflicts += 1
+
+                self.sum_aux_guard_cosine += (
+                    float(
+                        surgery_diagnostics[
+                            "aux_guard_cosine"
+                        ]
+                    )
+                )
+
+                self.sum_projection_strength += (
+                    float(
+                        surgery_diagnostics[
+                            "projection_strength"
+                        ]
+                    )
+                )
+
+                self.sum_raw_aux_gradient_norm += (
+                    float(
+                        surgery_diagnostics[
+                            "raw_aux_gradient_norm"
+                        ]
+                    )
+                )
+
+                self.sum_safe_aux_gradient_norm += (
+                    float(
+                        surgery_diagnostics[
+                            "safe_aux_gradient_norm"
+                        ]
+                    )
+                )
+
+                self.sum_guard_gradient_norm += (
+                    float(
+                        surgery_diagnostics[
+                            "guard_gradient_norm"
+                        ]
+                    )
+                )
+
+                self.sum_removed_gradient_fraction += (
+                    float(
+                        surgery_diagnostics[
+                            "removed_gradient_fraction"
+                        ]
+                    )
+                )
+
+                # --------------------------------------------
+                # Per-observation surgery diagnostics
+                # --------------------------------------------
+
+                local_guard_evaluations += 1
+
+                if bool(
+                    surgery_diagnostics[
+                        "main_gradient_conflict"
+                    ]
+                ):
+                    local_conflicts += 1
+
+                local_sum_cosine += float(
+                    surgery_diagnostics[
+                        "aux_guard_cosine"
+                    ]
+                )
+
+                local_sum_projection_strength += float(
+                    surgery_diagnostics[
+                        "projection_strength"
+                    ]
+                )
+
+                local_sum_raw_aux_gradient_norm += float(
+                    surgery_diagnostics[
+                        "raw_aux_gradient_norm"
+                    ]
+                )
+
+                local_sum_safe_aux_gradient_norm += float(
+                    surgery_diagnostics[
+                        "safe_aux_gradient_norm"
+                    ]
+                )
+
+                local_sum_guard_gradient_norm += float(
+                    surgery_diagnostics[
+                        "guard_gradient_norm"
+                    ]
+                )
+
+                local_sum_removed_fraction += float(
+                    surgery_diagnostics[
+                        "removed_gradient_fraction"
+                    ]
+                )
+
+            else:
+
+                accepted_gradient = (
+                    self._clone_gradient(
+                        raw_gradient
+                    )
+                )
+
+            # ================================================
+            # TEMPORAL FILTERING
+            # ================================================
+
             (
                 temporal_gradient,
                 step_diagnostics,
             ) = (
                 self._temporal_gradient(
-                    raw_gradient
+                    accepted_gradient
                 )
             )
 
@@ -911,11 +1156,16 @@ class TemporalGradientEMATTA(MetadataTTA):
                 )
             )
 
-            # The current metadata gradient becomes part of
-            # temporal memory only after its update direction
+            # IMPORTANT:
+            #
+            # The accepted gradient becomes part of temporal
+            # memory only after the current update direction
             # has been constructed.
+            #
+            # In V4 this means the EMA stores g_safe rather
+            # than the unprotected raw auxiliary gradient.
             self._update_gradient_ema(
-                raw_gradient
+                accepted_gradient
             )
 
             self.temporal_update_count += 1
@@ -965,7 +1215,9 @@ class TemporalGradientEMATTA(MetadataTTA):
             )
 
             final_step_diagnostics = (
-                step_diagnostics
+                dict(
+                    step_diagnostics
+                )
             )
 
             final_step_diagnostics[
@@ -998,85 +1250,175 @@ class TemporalGradientEMATTA(MetadataTTA):
             mean_parameter_delta
         )
 
-        return AdaptationResult(
-            applied=True,
-            diagnostics={
-                "reason":
-                    (
-                        "warmup_update"
-                        if bool(
-                            final_step_diagnostics[
-                                "warmup"
-                            ]
-                        )
-                        else "temporal_update"
-                    ),
-
-                "aux_loss":
-                    float(
-                        final_step_diagnostics[
-                            "aux_loss"
-                        ]
-                    ),
-
-                "normalized_aux_loss":
-                    normalized_aux_loss,
-
-                "warmup":
-                    bool(
+        result_diagnostics: dict[
+            str,
+            Any,
+        ] = {
+            "reason":
+                (
+                    "warmup_update"
+                    if bool(
                         final_step_diagnostics[
                             "warmup"
                         ]
-                    ),
+                    )
+                    else "temporal_update"
+                ),
 
-                "raw_gradient_norm":
-                    float(
-                        final_step_diagnostics[
-                            "raw_gradient_norm"
-                        ]
-                    ),
+            "aux_loss":
+                float(
+                    final_step_diagnostics[
+                        "aux_loss"
+                    ]
+                ),
 
-                "ema_gradient_norm":
-                    float(
-                        final_step_diagnostics[
-                            "ema_gradient_norm"
-                        ]
-                    ),
+            "normalized_aux_loss":
+                normalized_aux_loss,
 
-                "parallel_gradient_norm":
-                    float(
-                        final_step_diagnostics[
-                            "parallel_gradient_norm"
-                        ]
-                    ),
+            "warmup":
+                bool(
+                    final_step_diagnostics[
+                        "warmup"
+                    ]
+                ),
 
-                "orthogonal_gradient_norm":
-                    float(
-                        final_step_diagnostics[
-                            "orthogonal_gradient_norm"
-                        ]
-                    ),
+            # This is the gradient entering the temporal
+            # filter. With main preservation enabled it is
+            # already the safe gradient.
+            "raw_gradient_norm":
+                float(
+                    final_step_diagnostics[
+                        "raw_gradient_norm"
+                    ]
+                ),
 
-                "temporal_gradient_norm":
-                    float(
-                        final_step_diagnostics[
-                            "temporal_gradient_norm"
-                        ]
-                    ),
+            "ema_gradient_norm":
+                float(
+                    final_step_diagnostics[
+                        "ema_gradient_norm"
+                    ]
+                ),
 
-                "gradient_cosine":
-                    float(
-                        final_step_diagnostics[
-                            "gradient_cosine"
-                        ]
-                    ),
+            "parallel_gradient_norm":
+                float(
+                    final_step_diagnostics[
+                        "parallel_gradient_norm"
+                    ]
+                ),
 
-                "parameter_gradient_norm":
-                    mean_parameter_gradient_norm,
+            "orthogonal_gradient_norm":
+                float(
+                    final_step_diagnostics[
+                        "orthogonal_gradient_norm"
+                    ]
+                ),
 
-                "parameter_delta":
-                    mean_parameter_delta,
-            },
+            "temporal_gradient_norm":
+                float(
+                    final_step_diagnostics[
+                        "temporal_gradient_norm"
+                    ]
+                ),
+
+            "gradient_cosine":
+                float(
+                    final_step_diagnostics[
+                        "gradient_cosine"
+                    ]
+                ),
+
+            "parameter_gradient_norm":
+                mean_parameter_gradient_norm,
+
+            "parameter_delta":
+                mean_parameter_delta,
+
+            "main_preservation_enabled":
+                bool(
+                    self.main_preservation_enabled
+                ),
+        }
+
+        if (
+            self.main_preservation_enabled
+            and source_reference is not None
+        ):
+
+            local_guard_denominator = max(
+                local_guard_evaluations,
+                1,
+            )
+
+            result_diagnostics.update(
+                {
+                    "source_main_confidence":
+                        float(
+                            source_reference[
+                                "confidence"
+                            ]
+                        ),
+
+                    "source_main_margin":
+                        float(
+                            source_reference[
+                                "margin"
+                            ]
+                        ),
+
+                    "mean_aux_guard_cosine":
+                        float(
+                            local_sum_cosine
+                            / local_guard_denominator
+                        ),
+
+                    "main_gradient_conflict_count":
+                        int(
+                            local_conflicts
+                        ),
+
+                    "main_gradient_conflict_rate":
+                        float(
+                            local_conflicts
+                            / local_guard_denominator
+                        ),
+
+                    "mean_projection_strength":
+                        float(
+                            local_sum_projection_strength
+                            / local_guard_denominator
+                        ),
+
+                    "mean_raw_aux_gradient_norm":
+                        float(
+                            local_sum_raw_aux_gradient_norm
+                            / local_guard_denominator
+                        ),
+
+                    "mean_safe_aux_gradient_norm":
+                        float(
+                            local_sum_safe_aux_gradient_norm
+                            / local_guard_denominator
+                        ),
+
+                    "mean_guard_gradient_norm":
+                        float(
+                            local_sum_guard_gradient_norm
+                            / local_guard_denominator
+                        ),
+
+                    "mean_removed_gradient_fraction":
+                        float(
+                            local_sum_removed_fraction
+                            / local_guard_denominator
+                        ),
+                }
+            )
+
+        return AdaptationResult(
+            applied=True,
+            diagnostics=(
+                result_diagnostics
+            ),
         )
 
     # ========================================================
@@ -1087,13 +1429,13 @@ class TemporalGradientEMATTA(MetadataTTA):
         self,
     ) -> dict[str, Any]:
 
+        # MetadataTTA already contributes:
+        #
+        # - reliability-window diagnostics
+        # - main-preservation diagnostics
+        # - standard update diagnostics
         diagnostics = (
             super().diagnostics()
-        )
-
-        n_observations = max(
-            self.number_of_observations,
-            1,
         )
 
         n_updates = max(
@@ -1118,18 +1460,9 @@ class TemporalGradientEMATTA(MetadataTTA):
                         self.n_temporal_updates
                     ),
 
-                "mean_aux_loss":
-                    float(
-                        self.sum_aux_loss
-                        / n_observations
-                    ),
-
-                "mean_normalized_aux_loss":
-                    float(
-                        self.sum_normalized_aux_loss
-                        / n_observations
-                    ),
-
+                # Gradient entering the temporal filter.
+                # With main preservation enabled, this is the
+                # safe/main-preserved gradient.
                 "mean_raw_gradient_norm":
                     float(
                         self.sum_raw_gradient_norm
@@ -1176,6 +1509,11 @@ class TemporalGradientEMATTA(MetadataTTA):
                     float(
                         self.sum_parameter_delta
                         / n_updates
+                    ),
+
+                "temporal_memory_uses_main_preserved_gradient":
+                    bool(
+                        self.main_preservation_enabled
                     ),
             }
         )

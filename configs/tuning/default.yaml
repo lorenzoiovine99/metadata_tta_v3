@@ -1,116 +1,116 @@
 tuning:
   model:
     candidates:
-    - id: m00
-      parameters:
-        lr: 0.0001
-        temporal_lr: 3.0e-05
-        weight_decay: 0.0
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.0001
-        training.temporal.learning_rate: 3.0e-05
-        training.base.weight_decay: 0.0
-        model.single_head.shared_hidden_dim: 512
-    - id: m01
-      parameters:
-        lr: 0.0001
-        temporal_lr: 0.0001
-        weight_decay: 0.0001
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.0001
-        training.temporal.learning_rate: 0.0001
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 512
-    - id: m02
-      parameters:
-        lr: 0.0003
-        temporal_lr: 3.0e-05
-        weight_decay: 0.0
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.0003
-        training.temporal.learning_rate: 3.0e-05
-        training.base.weight_decay: 0.0
-        model.single_head.shared_hidden_dim: 512
-    - id: m03
-      parameters:
-        lr: 0.0003
-        temporal_lr: 0.0001
-        weight_decay: 0.0
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.0003
-        training.temporal.learning_rate: 0.0001
-        training.base.weight_decay: 0.0
-        model.single_head.shared_hidden_dim: 512
-    - id: m04
-      parameters:
-        lr: 0.0003
-        temporal_lr: 0.0001
-        weight_decay: 0.0001
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.0003
-        training.temporal.learning_rate: 0.0001
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 512
-    - id: m05
-      parameters:
-        lr: 0.0003
-        temporal_lr: 0.0003
-        weight_decay: 0.0001
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.0003
-        training.temporal.learning_rate: 0.0003
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 512
-    - id: m06
-      parameters:
-        lr: 0.0006
-        temporal_lr: 0.0001
-        weight_decay: 0.0
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.0006
-        training.temporal.learning_rate: 0.0001
-        training.base.weight_decay: 0.0
-        model.single_head.shared_hidden_dim: 512
-    - id: m07
-      parameters:
-        lr: 0.0006
-        temporal_lr: 0.0003
-        weight_decay: 0.0001
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.0006
-        training.temporal.learning_rate: 0.0003
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 512
-    - id: m08
-      parameters:
-        lr: 0.001
-        temporal_lr: 0.0001
-        weight_decay: 0.0
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.001
-        training.temporal.learning_rate: 0.0001
-        training.base.weight_decay: 0.0
-        model.single_head.shared_hidden_dim: 512
-    - id: m09
-      parameters:
-        lr: 0.001
-        temporal_lr: 0.0003
-        weight_decay: 0.0001
-        shared_hidden_dim: 512
-      overrides:
-        training.base.learning_rate: 0.001
-        training.temporal.learning_rate: 0.0003
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 512
+    # - id: m00
+    #   parameters:
+    #     lr: 0.0001
+    #     temporal_lr: 3.0e-05
+    #     weight_decay: 0.0
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.0001
+    #     training.temporal.learning_rate: 3.0e-05
+    #     training.base.weight_decay: 0.0
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m01
+    #   parameters:
+    #     lr: 0.0001
+    #     temporal_lr: 0.0001
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.0001
+    #     training.temporal.learning_rate: 0.0001
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m02
+    #   parameters:
+    #     lr: 0.0003
+    #     temporal_lr: 3.0e-05
+    #     weight_decay: 0.0
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.0003
+    #     training.temporal.learning_rate: 3.0e-05
+    #     training.base.weight_decay: 0.0
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m03
+    #   parameters:
+    #     lr: 0.0003
+    #     temporal_lr: 0.0001
+    #     weight_decay: 0.0
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.0003
+    #     training.temporal.learning_rate: 0.0001
+    #     training.base.weight_decay: 0.0
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m04
+    #   parameters:
+    #     lr: 0.0003
+    #     temporal_lr: 0.0001
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.0003
+    #     training.temporal.learning_rate: 0.0001
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m05
+    #   parameters:
+    #     lr: 0.0003
+    #     temporal_lr: 0.0003
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.0003
+    #     training.temporal.learning_rate: 0.0003
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m06
+    #   parameters:
+    #     lr: 0.0006
+    #     temporal_lr: 0.0001
+    #     weight_decay: 0.0
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.0006
+    #     training.temporal.learning_rate: 0.0001
+    #     training.base.weight_decay: 0.0
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m07
+    #   parameters:
+    #     lr: 0.0006
+    #     temporal_lr: 0.0003
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.0006
+    #     training.temporal.learning_rate: 0.0003
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m08
+    #   parameters:
+    #     lr: 0.001
+    #     temporal_lr: 0.0001
+    #     weight_decay: 0.0
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.001
+    #     training.temporal.learning_rate: 0.0001
+    #     training.base.weight_decay: 0.0
+    #     model.single_head.shared_hidden_dim: 512
+    # - id: m09
+    #   parameters:
+    #     lr: 0.001
+    #     temporal_lr: 0.0003
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 512
+    #   overrides:
+    #     training.base.learning_rate: 0.001
+    #     training.temporal.learning_rate: 0.0003
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 512
     - id: m10
       parameters:
         lr: 0.0003
@@ -122,315 +122,294 @@ tuning:
         training.temporal.learning_rate: 0.0001
         training.base.weight_decay: 0.0001
         model.single_head.shared_hidden_dim: 1024
-    - id: m11
-      parameters:
-        lr: 0.0006
-        temporal_lr: 0.0001
-        weight_decay: 0.0001
-        shared_hidden_dim: 1024
-      overrides:
-        training.base.learning_rate: 0.0006
-        training.temporal.learning_rate: 0.0001
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 1024
-    - id: m12
-      parameters:
-        lr: 0.0003
-        temporal_lr: 0.0003
-        weight_decay: 0.0001
-        shared_hidden_dim: 1024
-      overrides:
-        training.base.learning_rate: 0.0003
-        training.temporal.learning_rate: 0.0003
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 1024
-    - id: m13
-      parameters:
-        lr: 0.0001
-        temporal_lr: 0.0001
-        weight_decay: 0.0001
-        shared_hidden_dim: 1024
-      overrides:
-        training.base.learning_rate: 0.0001
-        training.temporal.learning_rate: 0.0001
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 1024
-    - id: m14
-      parameters:
-        lr: 0.0003
-        temporal_lr: 0.0001
-        weight_decay: 0.0001
-        shared_hidden_dim: 256
-      overrides:
-        training.base.learning_rate: 0.0003
-        training.temporal.learning_rate: 0.0001
-        training.base.weight_decay: 0.0001
-        model.single_head.shared_hidden_dim: 256
+    # - id: m11
+    #   parameters:
+    #     lr: 0.0006
+    #     temporal_lr: 0.0001
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 1024
+    #   overrides:
+    #     training.base.learning_rate: 0.0006
+    #     training.temporal.learning_rate: 0.0001
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 1024
+    # - id: m12
+    #   parameters:
+    #     lr: 0.0003
+    #     temporal_lr: 0.0003
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 1024
+    #   overrides:
+    #     training.base.learning_rate: 0.0003
+    #     training.temporal.learning_rate: 0.0003
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 1024
+    # - id: m13
+    #   parameters:
+    #     lr: 0.0001
+    #     temporal_lr: 0.0001
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 1024
+    #   overrides:
+    #     training.base.learning_rate: 0.0001
+    #     training.temporal.learning_rate: 0.0001
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 1024
+    # - id: m14
+    #   parameters:
+    #     lr: 0.0003
+    #     temporal_lr: 0.0001
+    #     weight_decay: 0.0001
+    #     shared_hidden_dim: 256
+    #   overrides:
+    #     training.base.learning_rate: 0.0003
+    #     training.temporal.learning_rate: 0.0001
+    #     training.base.weight_decay: 0.0001
+    #     model.single_head.shared_hidden_dim: 256
   aux_head:
     candidates:
     - id: a00
-      parameters:
-        aux_lr: 0.0001
+      parameters: {aux_lr: 0.00003}
+      overrides:
+        training.double_head.learning_rate: 0.00003
+
+    - id: a01
+      parameters: {aux_lr: 0.0001}
       overrides:
         training.double_head.learning_rate: 0.0001
-    - id: a01
-      parameters:
-        aux_lr: 0.0003
+
+    - id: a02
+      parameters: {aux_lr: 0.0003}
       overrides:
         training.double_head.learning_rate: 0.0003
-    - id: a02
-      parameters:
-        aux_lr: 0.001
+
+    - id: a03
+      parameters: {aux_lr: 0.001}
       overrides:
         training.double_head.learning_rate: 0.001
-    - id: a03
-      parameters:
-        aux_lr: 0.003
-      overrides:
-        training.double_head.learning_rate: 0.003
-  metadata_episodic:
+  aux_alignment:
     candidates:
-    - id: e00
-      parameters:
-        lr: 0.0001
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 1.0
+    - id: ga00
+      parameters: {gradient_alignment_weight: 0.0}
       overrides:
-        methods.metadata_episodic.learning_rate: 0.0001
-        methods.metadata_episodic.normalized_aux_loss_min: 0.0
-        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+        training.double_head.gradient_alignment_weight: 0.0
 
-    - id: e01
-      parameters:
-        lr: 0.0001
-        normalized_aux_loss_min: 0.25
-        normalized_aux_loss_max: 1.0
+    - id: ga01
+      parameters: {gradient_alignment_weight: 3.0}
       overrides:
-        methods.metadata_episodic.learning_rate: 0.0001
-        methods.metadata_episodic.normalized_aux_loss_min: 0.25
-        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+        training.double_head.gradient_alignment_weight: 3.0
 
-    - id: e02
-      parameters:
-        lr: 0.0001
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 0.75
+    - id: ga02
+      parameters: {gradient_alignment_weight: 10.0}
       overrides:
-        methods.metadata_episodic.learning_rate: 0.0001
-        methods.metadata_episodic.normalized_aux_loss_min: 0.0
-        methods.metadata_episodic.normalized_aux_loss_max: 0.75
+        training.double_head.gradient_alignment_weight: 10.0
 
-    - id: e03
-      parameters:
-        lr: 0.0003
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 1.0
+    - id: ga03
+      parameters: {gradient_alignment_weight: 30.0}
       overrides:
-        methods.metadata_episodic.learning_rate: 0.0003
-        methods.metadata_episodic.normalized_aux_loss_min: 0.0
-        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+        training.double_head.gradient_alignment_weight: 30.0
 
-    - id: e04
-      parameters:
-        lr: 0.0003
-        normalized_aux_loss_min: 0.25
-        normalized_aux_loss_max: 1.0
+    - id: ga04
+      parameters: {gradient_alignment_weight: 100.0}
       overrides:
-        methods.metadata_episodic.learning_rate: 0.0003
-        methods.metadata_episodic.normalized_aux_loss_min: 0.25
-        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+        training.double_head.gradient_alignment_weight: 100.0
+  metadata_episodic:
+    gradient_norm_quantile_values:
+      - null
+      - 0.25
+      - 0.50
+      - 0.75
+      - 0.90
 
-    - id: e05
-      parameters:
-        lr: 0.0003
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 0.75
-      overrides:
-        methods.metadata_episodic.learning_rate: 0.0003
-        methods.metadata_episodic.normalized_aux_loss_min: 0.0
-        methods.metadata_episodic.normalized_aux_loss_max: 0.75
+    candidates:
+      - id: e00
+        parameters:
+          lr: 0.0001
+          normalized_aux_loss_min: 0.0
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0001
+          methods.metadata_episodic.normalized_aux_loss_min: 0.0
+          methods.metadata_episodic.normalized_aux_loss_max: 1.0
 
-    - id: e06
-      parameters:
-        lr: 0.0005
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_episodic.learning_rate: 0.0005
-        methods.metadata_episodic.normalized_aux_loss_min: 0.0
-        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+      - id: e01
+        parameters:
+          lr: 0.0001
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0001
+          methods.metadata_episodic.normalized_aux_loss_min: 0.25
+          methods.metadata_episodic.normalized_aux_loss_max: 1.0
 
-    - id: e07
-      parameters:
-        lr: 0.0005
-        normalized_aux_loss_min: 0.25
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_episodic.learning_rate: 0.0005
-        methods.metadata_episodic.normalized_aux_loss_min: 0.25
-        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+      - id: e02
+        parameters:
+          lr: 0.0001
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.25
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0001
+          methods.metadata_episodic.normalized_aux_loss_min: 0.25
+          methods.metadata_episodic.normalized_aux_loss_max: 1.25
 
-    - id: e08
-      parameters:
-        lr: 0.0005
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 0.75
-      overrides:
-        methods.metadata_episodic.learning_rate: 0.0005
-        methods.metadata_episodic.normalized_aux_loss_min: 0.0
-        methods.metadata_episodic.normalized_aux_loss_max: 0.75
+      - id: e03
+        parameters:
+          lr: 0.0003
+          normalized_aux_loss_min: 0.0
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0003
+          methods.metadata_episodic.normalized_aux_loss_min: 0.0
+          methods.metadata_episodic.normalized_aux_loss_max: 1.0
 
-    - id: e09
-      parameters:
-        lr: 0.001
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_episodic.learning_rate: 0.001
-        methods.metadata_episodic.normalized_aux_loss_min: 0.0
-        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+      - id: e04
+        parameters:
+          lr: 0.0003
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0003
+          methods.metadata_episodic.normalized_aux_loss_min: 0.25
+          methods.metadata_episodic.normalized_aux_loss_max: 1.0
 
-    - id: e10
-      parameters:
-        lr: 0.001
-        normalized_aux_loss_min: 0.25
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_episodic.learning_rate: 0.001
-        methods.metadata_episodic.normalized_aux_loss_min: 0.25
-        methods.metadata_episodic.normalized_aux_loss_max: 1.0
+      - id: e05
+        parameters:
+          lr: 0.0003
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.25
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0003
+          methods.metadata_episodic.normalized_aux_loss_min: 0.25
+          methods.metadata_episodic.normalized_aux_loss_max: 1.25
 
-    - id: e11
-      parameters:
-        lr: 0.001
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 0.75
-      overrides:
-        methods.metadata_episodic.learning_rate: 0.001
-        methods.metadata_episodic.normalized_aux_loss_min: 0.0
-        methods.metadata_episodic.normalized_aux_loss_max: 0.75
+      - id: e06
+        parameters:
+          lr: 0.0005
+          normalized_aux_loss_min: 0.0
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0005
+          methods.metadata_episodic.normalized_aux_loss_min: 0.0
+          methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
+      - id: e07
+        parameters:
+          lr: 0.0005
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0005
+          methods.metadata_episodic.normalized_aux_loss_min: 0.25
+          methods.metadata_episodic.normalized_aux_loss_max: 1.0
+
+      - id: e08
+        parameters:
+          lr: 0.0005
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.25
+        overrides:
+          methods.metadata_episodic.learning_rate: 0.0005
+          methods.metadata_episodic.normalized_aux_loss_min: 0.25
+          methods.metadata_episodic.normalized_aux_loss_max: 1.25
 
   metadata_cumulative:
+    gradient_norm_quantile_values:
+      - null
+      - 0.25
+      - 0.50
+      - 0.75
+      - 0.90
+
     candidates:
-    - id: c00
-      parameters:
-        lr: 0.0001
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0001
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
-        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+      - id: c00
+        parameters:
+          lr: 0.0001
+          normalized_aux_loss_min: 0.0
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0001
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.0
 
-    - id: c01
-      parameters:
-        lr: 0.0001
-        normalized_aux_loss_min: 0.25
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0001
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.25
-        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+      - id: c01
+        parameters:
+          lr: 0.0001
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0001
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.0
 
-    - id: c02
-      parameters:
-        lr: 0.0001
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 0.75
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0001
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
-        methods.metadata_cumulative.normalized_aux_loss_max: 0.75
+      - id: c02
+        parameters:
+          lr: 0.0001
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.25
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0001
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.25
 
-    - id: c03
-      parameters:
-        lr: 0.0003
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0003
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
-        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+      - id: c03
+        parameters:
+          lr: 0.0003
+          normalized_aux_loss_min: 0.0
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0003
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.0
 
-    - id: c04
-      parameters:
-        lr: 0.0003
-        normalized_aux_loss_min: 0.25
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0003
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.25
-        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+      - id: c04
+        parameters:
+          lr: 0.0003
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0003
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.0
 
-    - id: c05
-      parameters:
-        lr: 0.0003
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 0.75
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0003
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
-        methods.metadata_cumulative.normalized_aux_loss_max: 0.75
+      - id: c05
+        parameters:
+          lr: 0.0003
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.25
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0003
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.25
 
-    - id: c06
-      parameters:
-        lr: 0.0005
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0005
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
-        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+      - id: c06
+        parameters:
+          lr: 0.0005
+          normalized_aux_loss_min: 0.0
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0005
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.0
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.0
 
-    - id: c07
-      parameters:
-        lr: 0.0005
-        normalized_aux_loss_min: 0.25
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0005
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.25
-        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
+      - id: c07
+        parameters:
+          lr: 0.0005
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.0
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0005
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.0
 
-    - id: c08
-      parameters:
-        lr: 0.0005
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 0.75
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.0005
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
-        methods.metadata_cumulative.normalized_aux_loss_max: 0.75
-
-    - id: c09
-      parameters:
-        lr: 0.001
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.001
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
-        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
-
-    - id: c10
-      parameters:
-        lr: 0.001
-        normalized_aux_loss_min: 0.25
-        normalized_aux_loss_max: 1.0
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.001
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.25
-        methods.metadata_cumulative.normalized_aux_loss_max: 1.0
-
-    - id: c11
-      parameters:
-        lr: 0.001
-        normalized_aux_loss_min: 0.0
-        normalized_aux_loss_max: 0.75
-      overrides:
-        methods.metadata_cumulative.learning_rate: 0.001
-        methods.metadata_cumulative.normalized_aux_loss_min: 0.0
-        methods.metadata_cumulative.normalized_aux_loss_max: 0.75
+      - id: c08
+        parameters:
+          lr: 0.0005
+          normalized_aux_loss_min: 0.25
+          normalized_aux_loss_max: 1.25
+        overrides:
+          methods.metadata_cumulative.learning_rate: 0.0005
+          methods.metadata_cumulative.normalized_aux_loss_min: 0.25
+          methods.metadata_cumulative.normalized_aux_loss_max: 1.25
   metadata_cumulative_annual_reset:
     candidates:
     - id: inherit
@@ -440,39 +419,44 @@ tuning:
     candidates:
     - id: d00
       parameters:
+        adwin_delta: 0.001
+      overrides:
+        methods.metadata_cumulative_drift_reset.adwin_delta: 0.001
+        methods.metadata_cumulative_drift_reset.drift_signal: normalized_aux_loss
+
+    - id: d01
+      parameters:
         adwin_delta: 0.01
       overrides:
         methods.metadata_cumulative_drift_reset.adwin_delta: 0.01
         methods.metadata_cumulative_drift_reset.drift_signal: normalized_aux_loss
-    - id: d01
-      parameters:
-        adwin_delta: 0.03
-      overrides:
-        methods.metadata_cumulative_drift_reset.adwin_delta: 0.03
-        methods.metadata_cumulative_drift_reset.drift_signal: normalized_aux_loss
+
     - id: d02
       parameters:
         adwin_delta: 0.05
       overrides:
         methods.metadata_cumulative_drift_reset.adwin_delta: 0.05
         methods.metadata_cumulative_drift_reset.drift_signal: normalized_aux_loss
+
     - id: d03
-      parameters:
-        adwin_delta: 0.1
-      overrides:
-        methods.metadata_cumulative_drift_reset.adwin_delta: 0.1
-        methods.metadata_cumulative_drift_reset.drift_signal: normalized_aux_loss
-    - id: d04
       parameters:
         adwin_delta: 0.2
       overrides:
         methods.metadata_cumulative_drift_reset.adwin_delta: 0.2
         methods.metadata_cumulative_drift_reset.drift_signal: normalized_aux_loss
+
+    - id: d04
+      parameters:
+        adwin_delta: 0.5
+      overrides:
+        methods.metadata_cumulative_drift_reset.adwin_delta: 0.5
+        methods.metadata_cumulative_drift_reset.drift_signal: normalized_aux_loss
+
     - id: d05
       parameters:
-        adwin_delta: 0.3
+        adwin_delta: 0.8
       overrides:
-        methods.metadata_cumulative_drift_reset.adwin_delta: 0.3
+        methods.metadata_cumulative_drift_reset.adwin_delta: 0.8
         methods.metadata_cumulative_drift_reset.drift_signal: normalized_aux_loss
   metadata_cumulative_drift_annual_reset:
     candidates:

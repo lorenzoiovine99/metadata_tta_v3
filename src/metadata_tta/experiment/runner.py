@@ -5,6 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+from metadata_tta.tta.metadata import (
+    compute_source_aux_gradient_norms,
+)
+
 import numpy as np
 import torch
 from torch import nn
@@ -262,10 +266,11 @@ def _assert_single_double_equivalence(
         "equivalence before Aux training"
     )
 
-
 def _concatenate_aux_source(
     supervised_slices: tuple,
 ) -> tuple[
+    np.ndarray,
+    np.ndarray,
     np.ndarray,
     np.ndarray,
     np.ndarray,
@@ -280,6 +285,14 @@ def _concatenate_aux_source(
     X_train = np.concatenate(
         [
             item.X_train
+            for item in supervised_slices
+        ],
+        axis=0,
+    )
+
+    y_main_train = np.concatenate(
+        [
+            item.y_main_train
             for item in supervised_slices
         ],
         axis=0,
@@ -301,6 +314,14 @@ def _concatenate_aux_source(
         axis=0,
     )
 
+    y_main_validation = np.concatenate(
+        [
+            item.y_main_validation
+            for item in supervised_slices
+        ],
+        axis=0,
+    )
+
     y_aux_validation = np.concatenate(
         [
             item.y_aux_validation
@@ -311,11 +332,12 @@ def _concatenate_aux_source(
 
     return (
         X_train,
+        y_main_train,
         y_aux_train,
         X_validation,
+        y_main_validation,
         y_aux_validation,
     )
-
 
 def _train_final_aux_head(
     *,
@@ -350,8 +372,10 @@ def _train_final_aux_head(
 
     (
         X_train,
+        y_main_train,
         y_aux_train,
         X_validation,
+        y_main_validation,
         y_aux_validation,
     ) = _concatenate_aux_source(
         supervised_slices
@@ -388,46 +412,83 @@ def _train_final_aux_head(
 
     double_model = train_aux_head_only(
         model=double_model,
+
         X=X_train,
+        y_main=y_main_train,
         y_aux=y_aux_train,
+
         X_validation=X_validation,
-        y_aux_validation=y_aux_validation,
+        y_main_validation=(
+            y_main_validation
+        ),
+        y_aux_validation=(
+            y_aux_validation
+        ),
+
         learning_rate=float(
             aux_config.get(
                 "learning_rate",
-                base_config["learning_rate"],
+                base_config[
+                    "learning_rate"
+                ],
             )
         ),
+
         weight_decay=float(
             aux_config.get(
                 "weight_decay",
-                base_config["weight_decay"],
+                base_config[
+                    "weight_decay"
+                ],
             )
         ),
+
         batch_size=int(
             aux_config.get(
                 "batch_size",
-                base_config["batch_size"],
+                base_config[
+                    "batch_size"
+                ],
             )
         ),
+
         epochs=int(
             aux_config.get(
                 "epochs",
-                base_config["epochs"],
+                base_config[
+                    "epochs"
+                ],
             )
         ),
+
         patience=int(
             early_stopping.get(
                 "patience",
                 5,
             )
         ),
+
         min_delta=float(
             early_stopping.get(
                 "min_delta",
                 1.0e-4,
             )
         ),
+
+        gradient_alignment_weight=float(
+            aux_config.get(
+                "gradient_alignment_weight",
+                0.0,
+            )
+        ),
+
+        gradient_alignment_epsilon=float(
+            aux_config.get(
+                "gradient_alignment_epsilon",
+                1.0e-8,
+            )
+        ),
+
         device=device,
         log_prefix="FINAL:AUX",
     )
@@ -487,6 +548,173 @@ def _train_final_models(
         double=double,
     )
 
+def _calibrate_final_gradient_norm_thresholds(
+    *,
+    config: ExperimentConfig,
+    models: FinalModels,
+    protocol: V3Protocol,
+    device: torch.device,
+) -> ExperimentConfig:
+    """
+    Recompute numerical gradient-norm thresholds on the
+    FINAL-source validation set.
+
+    The selected quantile itself is frozen from tuning.
+
+    No OOD data and no OOD labels are used.
+    """
+
+    selected_quantiles: dict[
+        str,
+        float | None,
+    ] = {}
+
+    for method_name in TTA_METHOD_ORDER:
+
+        if not config.method_enabled(
+            method_name
+        ):
+            continue
+
+        method_config = config.method_config(
+            method_name
+        )
+
+        if (
+            "gradient_norm_quantile"
+            not in method_config
+        ):
+            continue
+
+        raw_quantile = method_config.get(
+            "gradient_norm_quantile"
+        )
+
+        quantile = (
+            None
+            if raw_quantile is None
+            else float(
+                raw_quantile
+            )
+        )
+
+        if (
+            quantile is not None
+            and not (
+                0.0
+                < quantile
+                < 1.0
+            )
+        ):
+            raise ValueError(
+                f"{method_name}: invalid "
+                f"gradient_norm_quantile={quantile}."
+            )
+
+        selected_quantiles[
+            method_name
+        ] = quantile
+
+    if not selected_quantiles:
+        return config
+
+    active_quantiles = [
+        quantile
+        for quantile
+        in selected_quantiles.values()
+        if quantile is not None
+    ]
+
+    source_gradient_norms: (
+        np.ndarray | None
+    ) = None
+
+    if active_quantiles:
+
+        source_slices = (
+            protocol.final_source_supervised()
+        )
+
+        X_validation = np.concatenate(
+            [
+                item.X_validation
+                for item in source_slices
+            ],
+            axis=0,
+        )
+
+        y_aux_validation = np.concatenate(
+            [
+                item.y_aux_validation
+                for item in source_slices
+            ],
+            axis=0,
+        )
+
+        source_gradient_norms = (
+            compute_source_aux_gradient_norms(
+                model=models.double,
+                X=X_validation,
+                y_aux=y_aux_validation,
+                device=device,
+            )
+        )
+
+        print()
+        print(
+            "[FINAL][GRAD-CAL] "
+            f"n={len(source_gradient_norms)} | "
+            f"p25={np.quantile(source_gradient_norms, 0.25):.6f} | "
+            f"p50={np.quantile(source_gradient_norms, 0.50):.6f} | "
+            f"p75={np.quantile(source_gradient_norms, 0.75):.6f} | "
+            f"p90={np.quantile(source_gradient_norms, 0.90):.6f}"
+        )
+
+    overrides: dict[
+        str,
+        Any,
+    ] = {}
+
+    for (
+        method_name,
+        quantile,
+    ) in selected_quantiles.items():
+
+        if quantile is None:
+
+            threshold = None
+
+        else:
+
+            if source_gradient_norms is None:
+                raise RuntimeError(
+                    "Missing final-source gradient calibration."
+                )
+
+            threshold = float(
+                np.quantile(
+                    source_gradient_norms,
+                    quantile,
+                )
+            )
+
+        overrides[
+            (
+                f"methods.{method_name}."
+                "gradient_norm_max"
+            )
+        ] = threshold
+
+        print(
+            "[FINAL][GRAD-CAL] "
+            f"{method_name} | "
+            f"q={quantile} | "
+            f"threshold={threshold}"
+        )
+
+    return config.with_overrides(
+        overrides
+    )
 
 def _evaluate_id_frozen(
     *,
@@ -904,6 +1132,12 @@ def _apply_best_overrides(
         None,
     )
 
+    alignment_result = getattr(
+        tuning_result,
+        "aux_alignment",
+        None,
+    )
+
     method_results = getattr(
         tuning_result,
         "methods",
@@ -922,6 +1156,12 @@ def _apply_best_overrides(
             "the aux_head stage."
         )
 
+    if alignment_result is None:
+        raise RuntimeError(
+            "V3 tuning result is missing "
+            "the aux_alignment stage."
+        )
+
     if not isinstance(
         method_results,
         dict,
@@ -937,6 +1177,10 @@ def _apply_best_overrides(
 
     overrides.update(
         aux_result.best_overrides
+    )
+
+    overrides.update(
+        alignment_result.best_overrides
     )
 
     for method_name, stage_result in (
@@ -1198,6 +1442,15 @@ def run_experiment(
         bundle=bundle,
         protocol=protocol,
         device=device,
+    )
+
+    effective_config = (
+        _calibrate_final_gradient_norm_thresholds(
+            config=effective_config,
+            models=final_models,
+            protocol=protocol,
+            device=device,
+        )
     )
 
     evaluation = _run_final_evaluation(
